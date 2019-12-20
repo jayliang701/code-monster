@@ -1,0 +1,25 @@
+{
+  "name": "codemonster",
+  "version": "1.0.0",
+  "description": "A utility tool to generate code template for lazy engineers.",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jayliang701/code-monster.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jayliang701/code-monster/issues"
+  },
+  "homepage": "https://github.com/jayliang701/code-monster#readme",
+  "bin": {
+    "codem": "./codem"
+  }
+}
