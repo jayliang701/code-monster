@@ -1,6 +1,6 @@
 import React from 'react';
 
-/*style import './NAME.style'; */
+//STYLE_IMPORT
 
 class NAME extends React.Component {
     constructor(props) {

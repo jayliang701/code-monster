@@ -40,7 +40,7 @@ const exec = () => {
     parser.commands[template](global.VARS, global.ARGS.splice(2)).then(async (files) => {
         for (let file of files) {
             let filePath = path.resolve(outputFolder, file.name);
-            await utils.writeFile(filePath, file.content, { encoding: typeof file === 'string' ? 'utf-8' : 'binary' });
+            await utils.writeFile(filePath, file.content, { encoding: typeof file.content === 'string' ? 'utf8' : 'binary' });
         }
         process.exit();
     }).catch(err => {

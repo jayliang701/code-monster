@@ -1,0 +1,67 @@
+{% extends './template/common_page.html' %}
+
+{% block title %}{{ super() }}{% endblock %}
+
+{% block head_import_frameworks_script %}
+{{ super() }}
+<!-- <script type="text/javascript" src="{{setting.RES_CDN_DOMAIN}}/js/test.js"></script> -->
+{% endblock %}
+
+{% block head_import_script %}
+{{ super() }}
+<!-- <script type="text/javascript" src="{{setting.RES_CDN_DOMAIN}}/js/test.js"></script> -->
+{% endblock %}
+
+{% block head_custom_script %}
+{{ super() }}
+<!-- <script>
+</script> -->
+{% endif %}
+{% endblock %}
+
+{% block head_import_style %}
+{{ super() }}
+<!-- <link rel="stylesheet" type="text/css" href="{{setting.RES_CDN_DOMAIN}}/styles/test.css" /> -->
+{% endif %}
+{% endblock %}
+
+{% block head_custom_style %}
+{{ super() }}
+<!-- <style>
+</style> -->
+{% endif %}
+{% endblock %}
+
+{% block content %}
+{{ super() }}
+<div>
+    
+</div>
+{% endblock %}
+
+{% block footer_import_style %}
+{{ super() }}
+<!-- <link rel="stylesheet" type="text/css" href="{{setting.RES_CDN_DOMAIN}}/styles/test.css" /> -->
+{% endblock %}
+
+{% block footer_custom_style %}
+{{ super() }}
+<!-- <style>
+</style> -->
+{% endblock %}
+
+{% block footer_import_script %}
+{{ super() }}
+<!-- <script src="{{setting.RES_CDN_DOMAIN}}/js/test.js" type="text/javascript"></script> -->
+{% endblock %}
+
+{% block footer_custom_script %}
+{{ super() }}
+<script>
+
+    function $inited() {
+        // executed when page rendered
+    }
+
+</script>
+{% endblock %}

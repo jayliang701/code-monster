@@ -1,6 +1,6 @@
 import React from 'react';
 
-import './NAME.style';
+//STYLE_IMPORT
 
 export default ({ a }) => {
     return (
