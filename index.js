@@ -26,32 +26,44 @@ const startup = () => {
     if (!global.APP_ROOT) global.APP_ROOT = path.parse(process.mainModule.filename).dir;
 }
 
-const exec = () => {
-    let group = global.ARGS[0];
-    let template = global.ARGS[1];
+const exec = (vars, args) => {
+    let group = args[0];
+    let template = args[1];
 
     let parser = require('./parser/' + group);
 
-    let outputFolder = global.VARS.output || process.cwd();
+    let outputFolder = vars.output || process.cwd();
     if (outputFolder.startsWith('./')) {
         outputFolder = path.resolve(process.cwd(), outputFolder);
     }
     
-    parser.commands[template](global.VARS, global.ARGS.splice(2), outputFolder).then(async (files) => {
-        for (let file of files) {
-            let filePath = path.resolve(outputFolder, file.name);
-            await utils.writeFile(filePath, file.content, { encoding: typeof file.content === 'string' ? 'utf8' : 'binary' });
-        }
+    return new Promise((resolve, reject) => {
+        parser.commands[template](vars, args.splice(2), outputFolder).then(async (files) => {
+            for (let file of files) {
+                let filePath = path.resolve(outputFolder, file.name);
+                await utils.writeFile(filePath, file.content, { encoding: typeof file.content === 'string' ? 'utf8' : 'binary' });
+            }
+            resolve();
+        }).catch(err => {
+            console.error(err);
+            reject(err)
+        });
+    });
+}
+
+exports.run = () => {
+    startup();
+    exec(global.VARS, global.ARGS).then(() => {
         process.exit();
     }).catch(err => {
-        console.error(err);
         setTimeout(() => {
             process.exit();
         }, 50);
     });
 }
 
+exports.runAsModule = (vars, args) => {
+    return exec(vars, args);
+}
 
-startup();
 
-exec();
