@@ -1,33 +1,37 @@
-package com.magicfish.web.api;
+package NAMESPACE;
 
 import com.magicfish.weroll.annotation.API;
 import com.magicfish.weroll.annotation.Method;
 import com.magicfish.weroll.annotation.Param;
 import com.magicfish.weroll.exception.ServiceException;
 import com.magicfish.weroll.net.APIAction;
-import com.magicfish.web.model.User;
-import com.magicfish.web.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 
-@API(name = "user")
-public class UserAPI {
+@API(name = "SERVICE_NAME_GROUP")
+public class SERVICE_NAMEAPI {
 
     @Autowired
-    private UserService userService;
+    private SomeService someService;
 
-    @Method(name = "login",
+    @Method(name = "echo",
+            needLogin = false,
             params = {
-                    @Param(name = "username", type = "string"),
-                    @Param(name = "password", type = "string")
+                    @Param(name = "name", type = "string"),
+                    @Param(name = "msg", type = "string")
             })
-    public Object login(String username, String password, APIAction request) throws ServiceException {
-        String token = null;
-        try {
-            token = userService.login(username, password);
-            return token;
-        } catch (Exception e) {
-            throw ServiceException.wrapper(e);
-        }
+    public Object echo(String name, String msg, APIAction action) throws Exception {
+        String content = someService.buildContent(name, msg);
+        return content;
+    }
+
+    @Method(name = "info",
+            needLogin = true,
+            params = {
+                   
+            })
+    public Object info(APIAction action) throws Exception {
+        String userId = action.getUserPayload().getId();
+        return userId;
     }
 
 }
