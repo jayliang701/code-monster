@@ -36,22 +36,37 @@ const makeNamespace = (outputFolder) => {
 
 exports.commands = {
 
-    "weroll-service": async (params, args, outputFolder) => {
+    "entity": async (params, args, outputFolder) => {
         let name = args[0] ? args[0] : '';
         if (!name || name.startsWith('-')) {
             name = params.name || 'Test';
         }
-
-        let code = await utils.readText(path.resolve(folder, 'weroll-service.java'));
-        let serviceName = name.charAt(0).toLowerCase() + name.substr(1);
-        code = code.replace(/SERVICE_NAME_GROUP/mg, serviceName);
-        code = code.replace(/SERVICE_NAME/mg, name);
+        let className = ((params.g || params.group) || name) + 'Entity';
+        let code = await utils.readText(path.resolve(folder, 'entity.java'));
 
         let namespace = makeNamespace(outputFolder);
-
         code = code.replace(/NAMESPACE/mg, namespace);
+
+        code = code.replace(/FILE_NAME/mg, className);
         return [
-            { name: name + 'API.java', content: code }
+            { name: className + '.java', content: code }
+        ];
+    },
+
+    "repository": async (params, args, outputFolder) => {
+        let name = args[0] ? args[0] : '';
+        if (!name || name.startsWith('-')) {
+            name = params.name || 'Test';
+        }
+        let className = ((params.g || params.group) || name) + 'Repository';
+        let code = await utils.readText(path.resolve(folder, 'repository.java'));
+
+        let namespace = makeNamespace(outputFolder);
+        code = code.replace(/NAMESPACE/mg, namespace);
+
+        code = code.replace(/FILE_NAME/mg, className);
+        return [
+            { name: className + '.java', content: code }
         ];
     },
 
@@ -69,6 +84,25 @@ exports.commands = {
         code = code.replace(/FILE_NAME/mg, name);
         return [
             { name: routerName + '.java', content: code }
+        ];
+    },
+
+    "weroll-service": async (params, args, outputFolder) => {
+        let name = args[0] ? args[0] : '';
+        if (!name || name.startsWith('-')) {
+            name = params.name || 'Test';
+        }
+
+        let code = await utils.readText(path.resolve(folder, 'weroll-service.java'));
+        let serviceName = name.charAt(0).toLowerCase() + name.substr(1);
+        code = code.replace(/SERVICE_NAME_GROUP/mg, serviceName);
+        code = code.replace(/SERVICE_NAME/mg, name);
+
+        let namespace = makeNamespace(outputFolder);
+
+        code = code.replace(/NAMESPACE/mg, namespace);
+        return [
+            { name: name + 'API.java', content: code }
         ];
     },
 };
