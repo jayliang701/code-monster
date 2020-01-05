@@ -40,7 +40,8 @@ const exec = (vars, args) => {
     return new Promise((resolve, reject) => {
         parser.commands[template](vars, args.splice(2), outputFolder).then(async (files) => {
             for (let file of files) {
-                let filePath = path.resolve(outputFolder, file.name);
+                let outFolder = file.output || outputFolder;
+                let filePath = path.resolve(outFolder, file.name);
                 await utils.writeFile(filePath, file.content, { encoding: typeof file.content === 'string' ? 'utf8' : 'binary' });
             }
             resolve();

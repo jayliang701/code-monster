@@ -21,5 +21,8 @@
   "homepage": "https://github.com/jayliang701/code-monster#readme",
   "bin": {
     "codem": "./codem"
+  },
+  "dependencies": {
+    "capitalization": "^1.0.0"
   }
 }

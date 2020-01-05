@@ -15,7 +15,7 @@ exports.readText = (url) => {
 }
 
 exports.writeFile = (url, content, option) => {
-    return new Promise(resolve => {
+    return new Promise((resolve, reject) => {
         fs.writeFile(url, content, option, (err) => {
             if (err) return reject(err);
             return resolve();
@@ -25,4 +25,13 @@ exports.writeFile = (url, content, option) => {
 
 exports.writeText = (url, content) => {
     return exports.writeFile(url, content, { encoding: 'utf-8' });
+}
+
+exports.mkdir = (url) => {
+    return new Promise((resolve, reject) => {
+        fs.mkdir(url, { recursive: true }, err => {
+            if (err) return reject(err);
+            resolve();
+        });
+    });
 }
