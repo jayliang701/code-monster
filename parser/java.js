@@ -126,8 +126,10 @@ exports.commands = {
         let a = [];
 
         let outputs = [];
-        outputFolder = path.resolve(outputFolder, 'domain');
-        await utils.mkdir(outputFolder);
+        if (!outputFolder.endsWith('domain')) {
+            outputFolder = path.resolve(outputFolder, 'domain');
+            await utils.mkdir(outputFolder);
+        }
 
         let customOutputFolder = path.resolve(outputFolder, 'entity');
         await utils.mkdir(customOutputFolder);
