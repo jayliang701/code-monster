@@ -27,6 +27,23 @@ const getParentNamespace = (namespace) => {
 
 exports.commands = {
 
+    "class": async (params, args, outputFolder) => {
+        let name = args[0] ? args[0] : '';
+        if (!name || name.startsWith('-')) {
+            name = params.name || 'Test';
+        }
+        let className = name + '';
+        let code = await utils.readText(path.resolve(folder, 'class.java'));
+
+        let namespace = makeNamespace(outputFolder);
+        code = code.replace(/NAMESPACE/mg, namespace);
+
+        code = code.replace(/FILE_NAME/mg, className);
+        return [
+            { name: className + '.java', content: code }
+        ];
+    },
+
     "entity": async (params, args, outputFolder) => {
         let name = args[0] ? args[0] : '';
         if (!name || name.startsWith('-')) {
@@ -44,7 +61,7 @@ exports.commands = {
         ];
     },
 
-    "repository": async (params, args, outputFolder) => {
+    "repo": async (params, args, outputFolder) => {
         let name = args[0] ? args[0] : '';
         if (!name || name.startsWith('-')) {
             name = params.name || 'Test';
@@ -188,6 +205,25 @@ exports.commands = {
         let code = await utils.readText(path.resolve(folder, 'weroll-service.java'));
         let serviceName = name.charAt(0).toLowerCase() + name.substr(1);
         code = code.replace(/SERVICE_NAME_GROUP/mg, serviceName);
+        code = code.replace(/SERVICE_NAME/mg, name);
+
+        let namespace = makeNamespace(outputFolder);
+
+        code = code.replace(/NAMESPACE/mg, namespace);
+        return [
+            { name: name + 'API.java', content: code }
+        ];
+    },
+
+    "weroll-rest": async (params, args, outputFolder) => {
+        let name = args[0] ? args[0] : '';
+        if (!name || name.startsWith('-')) {
+            name = params.name || 'Test';
+        }
+
+        let code = await utils.readText(path.resolve(folder, 'weroll-rest.java'));
+        // let serviceName = name.charAt(0).toLowerCase() + name.substr(1);
+        // code = code.replace(/SERVICE_NAME_GROUP/mg, serviceName);
         code = code.replace(/SERVICE_NAME/mg, name);
 
         let namespace = makeNamespace(outputFolder);
