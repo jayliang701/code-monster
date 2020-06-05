@@ -161,7 +161,7 @@ exports.commands = {
             name,
             entity: name,
         };
-        out = await exports.commands['repository'](p, a, customOutputFolder);
+        out = await exports.commands['repo'](p, a, customOutputFolder);
         out[0].output = customOutputFolder
         outputs.push(out[0]);
 
