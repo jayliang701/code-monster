@@ -3,7 +3,7 @@ package NAMESPACE;
 import ENTITY_NAMESPACE;
 
 import org.apache.ibatis.annotations.*;
-import org.springframework.data.repository.query.Param;
+import org.springframework.jdbc.core.SqlProvider;
 
 import java.util.List;
 
