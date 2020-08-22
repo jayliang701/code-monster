@@ -4,12 +4,14 @@ const path = require('path');
 const folder = path.resolve(__dirname, '../template/react');
 
 const genComp = async (params, args, templateFile) => {
-    let { scss, less, css, mobx } = params;
+    let { scss, less, css, mobx, index } = params;
     let name = args[0] ? args[0] : '';
     if (!name || name.startsWith('-')) {
         name = params.name || 'MyComponent';
     }
-    let code = await utils.readText(path.resolve(folder, templateFile || 'comp.js'));
+    let codeFile = templateFile || 'comp.js';
+    let codeFileExt = codeFile.split('.').pop();
+    let code = await utils.readText(path.resolve(folder, codeFile));
     let style, styleExt;
     if (scss || less || css) {
         styleExt = scss ? 'scss' : (less ? 'less' : 'css');
@@ -47,6 +49,16 @@ const genComp = async (params, args, templateFile) => {
         });
     }
 
+    if (index) {
+        //export via index
+        let indexContent = await utils.readText(path.resolve(folder, 'index.js'));
+        indexContent = indexContent.replace(/NAME/mg, name);
+        files.push({
+            name: 'index.' + codeFileExt,
+            content: indexContent,
+        });
+    }
+
     return files;
 }
 
@@ -58,5 +70,9 @@ exports.commands = {
 
     fcomp:  async (params, args) => {
         return genComp(params, args, 'fcomp.js');
+    },
+
+    fcompts:  async (params, args) => {
+        return genComp(params, args, 'fcomp.tsx');
     },
 };
