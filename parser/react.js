@@ -29,8 +29,8 @@ const genComp = async (params, args, templateFile) => {
         code = code.replace('MOBX_DECO_END', ')');
         code = code.replace('//MOBX_DECO', '@observer');
     } else {
-        code = code.replace('\r\n//MOBX_IMPORT\r\n', '');
-        code = code.replace('\r\n//MOBX_STATE\r\n', '');
+        code = code.replace(/[\r\n]{1}\/\/MOBX_IMPORT[\r\n]{1}/img, '');
+        code = code.replace(/[\r\n]{1}\/\/MOBX_STATE[\r\n]{1}/img, '');
         code = code.replace('MOBX_DECO_START', '');
         code = code.replace('MOBX_DECO_END', '');
         code = code.replace('//MOBX_DECO\r\n', '');
@@ -39,7 +39,7 @@ const genComp = async (params, args, templateFile) => {
     code = code.replace(/NAME/mg, name);
 
     let files = [
-        { name: name + '.js', content: code }
+        { name: name + '.' + codeFileExt, content: code }
     ];
 
     if (style) {
