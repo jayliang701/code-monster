@@ -1,21 +1,23 @@
 package NAMESPACE;
 
-public class FILE_NAME {
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
+import com.ugeez.commons.mybatisplus.entity.AbstractEntity;
+import lombok.Data;
 
-    private String id;
+import java.util.HashMap;
+import java.util.Map;
 
-    public String getId() {
-        return id;
-    }
+@Data
+@TableName(value = "tb_TABLE_NAME", resultMap = "TABLE_NAME_result_map")
+public class FILE_NAME extends AbstractEntity<FILE_NAME> {
 
-    public void setId(String id) {
-        this.id = id;
-    }
+    private Long userId;
 
-    @Override
-    public String toString() {
-        return "FILE_NAME{" +
-                "id=" + id +
-                '}';
-    }
+    /**
+     * 其他业务数据
+     */
+    @TableField(typeHandler= JacksonTypeHandler.class)
+    private Map<String, Object> biz = new HashMap<>();
 }

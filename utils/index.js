@@ -2,7 +2,7 @@ const path = require('path');
 const fs = require('fs');
 
 exports.readFile = (url, option) => {
-    return new Promise(resolve => {
+    return new Promise((resolve, reject) => {
         fs.readFile(url, option, (err, content) => {
             if (err) return reject(err);
             return resolve(content);
@@ -34,4 +34,30 @@ exports.mkdir = (url) => {
             resolve();
         });
     });
+}
+
+exports.camelCaseToUnderline = (name) => {
+    let len = name.length;
+    let newName = '';
+    for (let i = 0; i < len; i ++) {
+        let char = name.charAt(i);
+        if (char.toUpperCase() === char) {
+            char = char.toLowerCase();
+            if (i > 0) {
+                let prevChar = name.charAt(i - 1);
+                if (prevChar.toLowerCase() === prevChar) {
+                    char = '_' + char;
+                } else {
+                    if (i < len - 1) {
+                        let nextChar = name.charAt(i + 1);
+                        if (nextChar.toLowerCase() === nextChar) {
+                            char = '_' + char;
+                        } 
+                    }
+                }
+            }
+        }
+        newName += char;
+    }
+    return newName;
 }

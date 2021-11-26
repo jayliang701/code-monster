@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="NAMESPACE.ENTITY_NAMEMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="TABLE_NAME_result_map" type="ENTITY_NAMESPACE.ENTITY_NAME">
+        <id column="id" property="id" />
+        <result column="biz" property="biz" typeHandler="com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler" />
+        <result column="update_time" property="updateTime" typeHandler="com.ugeez.commons.mybatisplus.entity.handler.DateTimeTypeHandler" />
+        <result column="create_time" property="createTime" typeHandler="com.ugeez.commons.mybatisplus.entity.handler.DateTimeTypeHandler" />
+    </resultMap>
+
+    <sql id="TABLE_NAME_full_cols">
+        id,
+        biz,
+        update_time,
+        create_time
+    </sql>
+
+    <select id="selectLatestByUserId" resultMap="TABLE_NAME_result_map">
+        select
+        <include refid="TABLE_NAME_full_cols"></include>
+        from tb_TABLE_NAME
+        where user_id = #{userId}
+        order by id desc
+        limit 0, 1
+    </select>
+
+    <select id="search" resultMap="TABLE_NAME_result_map">
+        select
+        <include refid="TABLE_NAME_full_cols"></include>
+        from tb_TABLE_NAME ${filter}
+    </select>
+
+</mapper>
