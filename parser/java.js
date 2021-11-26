@@ -202,7 +202,7 @@ exports.commands = {
 
         xml = xml.replace(/ENTITY_NAMESPACE/mg, entityNamespace);
         xml = xml.replace(/NAMESPACE/mg, mapperNamespace);
-        xml = xml.replace(/ENTITY_NAME/mg, enityName);
+        xml = xml.replace(/ENTITY_NAME/mg, entityName);
         xml = xml.replace(/TABLE_NAME/mg, tableName);
 
         let folders = findFolders(outputFolder);
@@ -227,11 +227,11 @@ exports.commands = {
         await utils.mkdir(path.resolve(domainFolder, 'service/impl'));
 
         return [
-            { name: enityName + '.java', content: entityCode, output: path.resolve(persistenceFolder, 'entity') },
-            { name: enityName + 'Mapper.java', content: mapperCode, output: path.resolve(persistenceFolder, 'dao') },
-            { name: enityName + 'Service.java', content: interfaceCode, output: path.resolve(domainFolder, 'service') },
-            { name: enityName + 'ServiceImpl.java', content: implCode, output: path.resolve(domainFolder, 'service/impl') },
-            { name: enityName + '.xml', content: xml, output: persistenceXMLFolder },
+            { name: entityName + '.java', content: entityCode, output: path.resolve(persistenceFolder, 'entity') },
+            { name: entityName + 'Mapper.java', content: mapperCode, output: path.resolve(persistenceFolder, 'dao') },
+            { name: entityName + 'Service.java', content: interfaceCode, output: path.resolve(domainFolder, 'service') },
+            { name: entityName + 'ServiceImpl.java', content: implCode, output: path.resolve(domainFolder, 'service/impl') },
+            { name: entityName + '.xml', content: xml, output: persistenceXMLFolder },
         ];
     },
 };
