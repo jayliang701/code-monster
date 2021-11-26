@@ -189,7 +189,7 @@ exports.commands = {
 
         mapperCode = mapperCode.replace(/ENTITY_NAMESPACE/mg, entityNamespace);
         mapperCode = mapperCode.replace(/ENTITY_NAME/mg, entityName);
-        mapperCode = entityCode.replace(/NAMESPACE/mg, mapperNamespace);
+        mapperCode = mapperCode.replace(/NAMESPACE/mg, mapperNamespace);
 
         interfaceCode = interfaceCode.replace(/ENTITY_NAMESPACE/mg, entityNamespace);
         interfaceCode = interfaceCode.replace(/ENTITY_NAME/mg, entityName);
@@ -199,7 +199,7 @@ exports.commands = {
         implCode = implCode.replace(/ENTITY_NAME/mg, entityName);
         implCode = implCode.replace(/MAPPER_NAMESPACE/mg, mapperNamespace);
         implCode = implCode.replace(/INTERFACE_NAMESPACE/mg, interfaceNamespace);
-        implCode = implCode.replace(/NAMESPACE/mg, interfaceNamespace);
+        implCode = implCode.replace(/NAMESPACE/mg, implNamespace);
 
         xml = xml.replace(/ENTITY_NAMESPACE/mg, entityNamespace);
         xml = xml.replace(/NAMESPACE/mg, mapperNamespace);
