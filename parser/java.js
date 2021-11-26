@@ -169,7 +169,7 @@ exports.commands = {
             ns = params.ns || 'test';
         }
         
-        let enityName = name;
+        let entityName = name;
         let tableName = utils.camelCaseToUnderline(name);
 
         let entityCode = await utils.readText(path.resolve(folder, 'entity.java'));
