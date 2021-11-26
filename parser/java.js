@@ -28,7 +28,7 @@ const getParentNamespace = (namespace) => {
 
 const findFolders = (folder) => {
     return new Promise((resolve, reject) => {
-        fs.readdir(folder, (err, files => {
+        fs.readdir(folder, (err, files) => {
             if (err) return reject(err);
             let folders = [];
             files.forEach(file => {
@@ -37,7 +37,7 @@ const findFolders = (folder) => {
                 }
             });
             resolve(folders);
-        }));
+        });
     });
 }
 
@@ -185,27 +185,28 @@ exports.commands = {
 
         entityCode = entityCode.replace(/NAMESPACE/mg, entityNamespace);
         entityCode = entityCode.replace(/FILE_NAME/mg, entityName);
+        entityCode = entityCode.replace(/TABLE_NAME/mg, tableName);
 
-        mapperCode = entityCode.replace(/NAMESPACE/mg, mapperNamespace);
         mapperCode = mapperCode.replace(/ENTITY_NAMESPACE/mg, entityNamespace);
         mapperCode = mapperCode.replace(/ENTITY_NAME/mg, entityName);
+        mapperCode = entityCode.replace(/NAMESPACE/mg, mapperNamespace);
 
-        interfaceCode = interfaceCode.replace(/NAMESPACE/mg, interfaceNamespace);
         interfaceCode = interfaceCode.replace(/ENTITY_NAMESPACE/mg, entityNamespace);
         interfaceCode = interfaceCode.replace(/ENTITY_NAME/mg, entityName);
+        interfaceCode = interfaceCode.replace(/NAMESPACE/mg, interfaceNamespace);
 
-        implNamespace = implNamespace.replace(/NAMESPACE/mg, interfaceNamespace);
-        implNamespace = implNamespace.replace(/ENTITY_NAMESPACE/mg, entityNamespace);
-        implNamespace = implNamespace.replace(/ENTITY_NAME/mg, entityName);
-        implNamespace = implNamespace.replace(/MAPPER_NAMESPACE/mg, mapperNamespace);
-        implNamespace = implNamespace.replace(/INTERFACE_NAMESPACE/mg, interfaceNamespace);
+        implCode = implCode.replace(/ENTITY_NAMESPACE/mg, entityNamespace);
+        implCode = implCode.replace(/ENTITY_NAME/mg, entityName);
+        implCode = implCode.replace(/MAPPER_NAMESPACE/mg, mapperNamespace);
+        implCode = implCode.replace(/INTERFACE_NAMESPACE/mg, interfaceNamespace);
+        implCode = implCode.replace(/NAMESPACE/mg, interfaceNamespace);
 
         xml = xml.replace(/ENTITY_NAMESPACE/mg, entityNamespace);
         xml = xml.replace(/NAMESPACE/mg, mapperNamespace);
         xml = xml.replace(/ENTITY_NAME/mg, entityName);
         xml = xml.replace(/TABLE_NAME/mg, tableName);
 
-        let folders = findFolders(outputFolder);
+        let folders = await findFolders(outputFolder);
 
         let persistenceFolder = undefined;
         let persistenceXMLFolder = undefined;
@@ -213,10 +214,10 @@ exports.commands = {
         
         for (let folder of folders) {
             if (folder.endsWith('-persistence')) {
-                persistenceFolder = path.resolve(persistenceFolder, 'src/main/java', ns.replace(/\./img, '/'), 'persistence');
-                persistenceXMLFolder = path.resolve(persistenceFolder, 'src/main/resources/mapper');
+                persistenceFolder = path.resolve(folder, 'src/main/java', ns.replace(/\./img, '/'), 'persistence');
+                persistenceXMLFolder = path.resolve(folder, 'src/main/resources/mapper');
             } else if (folder.endsWith('-domain')) {
-                domainFolder = path.resolve(domainFolder, 'src/main/java', ns.replace(/\./img, '/'), 'domain');
+                domainFolder = path.resolve(folder, 'src/main/java', ns.replace(/\./img, '/'), 'domain');
             }
         }
 
