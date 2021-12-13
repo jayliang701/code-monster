@@ -19,5 +19,5 @@ public class FILE_NAME extends AbstractEntity<FILE_NAME> {
      * 其他业务数据
      */
     @TableField(typeHandler= JacksonTypeHandler.class)
-    private Map<String, Object> biz = new HashMap<>();
+    private Map<String, Object> biz;
 }
