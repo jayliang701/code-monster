@@ -180,92 +180,73 @@ exports.commands = {
         ];
     },
     
-    // "repo": async (params, args, outputFolder) => {
-    //     let name = args[0] ? args[0] : '';
-    //     if (!name || name.startsWith('-')) {
-    //         name = params.name || 'Test';
-    //     }
-    //     let ns = args[1] ? args[1] : '';
-    //     if (!ns || ns.startsWith('-')) {
-    //         ns = params.ns || 'test';
-    //     }
-        
-    //     let entityName = name;
-    //     let tableName = utils.camelCaseToUnderline(name);
+    "controller": async (params, args, outputFolder) => {
+        let name = args[0] ? args[0] : '';
+        if (!name || name.startsWith('-')) {
+            name = params.name || 'Test';
+        }
+        let apiPrefix = params.apiPrefix || '';
+        let entityName = name;
+        let varName = entityName.charAt(0).toLowerCase() + entityName.substr(1);
 
-    //     let entityCode = await utils.readText(path.resolve(folder, 'entity.java'));
-    //     let dtoCode = await utils.readText(path.resolve(folder, 'dto.java'));
-    //     let mapperCode = await utils.readText(path.resolve(folder, 'mapper.java'));
-    //     let xml = await utils.readText(path.resolve(folder, 'mapper.xml'));
-    //     let interfaceCode = await utils.readText(path.resolve(folder, 'service-interface.java'));
-    //     let implCode = await utils.readText(path.resolve(folder, 'service-impl.java'));
+        let code = await utils.readText(path.resolve(folder, 'controller.java'));
+        let createReqCode = await utils.readText(path.resolve(folder, 'create-req.java'));
+        let updateReqCode = await utils.readText(path.resolve(folder, 'update-req.java'));
+        let deleteReqCode = await utils.readText(path.resolve(folder, 'delete-req.java'));
 
-    //     let entityNamespace = ns + '.persistence.entity';
-    //     let dtoNamespace = ns + '.common.dto';
-    //     let mapperNamespace = ns + '.persistence.dao';
-    //     let interfaceNamespace = ns + '.domain.service';
-    //     let implNamespace = ns + '.domain.service.impl';
+        let namespace = params.namespace || makeNamespace(outputFolder);
+        let rootNamespace = params.rootNamespace;
+        if (!rootNamespace) {
+            let strs = namespace.split('.');
+            if (strs.length > 1 && strs[strs.length - 1] === 'controller') {
+                rootNamespace = namespace.replace('.controller', '');
+                rootNamespace = rootNamespace.substring(0, rootNamespace.lastIndexOf('.'));
+            } else {
+                rootNamespace = namespace;
+            }
+        }
+        let entityNamespace = rootNamespace + '.persistence.entity';
+        let dtoNamespace = rootNamespace + '.common.dto';
+        let innerDtoNamespace = namespace.replace('.controller', '.dto');
+        let serviceNamespace = rootNamespace + '.domain.service';
 
-    //     entityCode = entityCode.replace(/NAMESPACE/mg, entityNamespace);
-    //     entityCode = entityCode.replace(/FILE_NAME/mg, entityName);
-    //     entityCode = entityCode.replace(/TABLE_NAME/mg, tableName);
+        code = code.replace(/API_PREFIX/mg, apiPrefix);
 
-    //     dtoCode = dtoCode.replace(/NAMESPACE/mg, dtoNamespace);
-    //     dtoCode = dtoCode.replace(/FILE_NAME/mg, entityName);
+        code = code.replace(/ENTITY_NAMESPACE/mg, entityNamespace);
 
-    //     mapperCode = mapperCode.replace(/ENTITY_NAMESPACE/mg, entityNamespace);
-    //     mapperCode = mapperCode.replace(/ENTITY_NAME/mg, entityName);
-    //     mapperCode = mapperCode.replace(/NAMESPACE/mg, mapperNamespace);
+        code = code.replace(/INNER_DTO_NAMESPACE/mg, innerDtoNamespace);
 
-    //     interfaceCode = interfaceCode.replace(/ENTITY_NAMESPACE/mg, entityNamespace);
-    //     interfaceCode = interfaceCode.replace(/ENTITY_NAME/mg, entityName);
-    //     interfaceCode = interfaceCode.replace(/NAMESPACE/mg, interfaceNamespace);
+        code = code.replace(/DTO_NAMESPACE/mg, dtoNamespace);
 
-    //     implCode = implCode.replace(/ENTITY_NAMESPACE/mg, entityNamespace);
-    //     implCode = implCode.replace(/ENTITY_NAME/mg, entityName);
-    //     implCode = implCode.replace(/MAPPER_NAMESPACE/mg, mapperNamespace);
-    //     implCode = implCode.replace(/INTERFACE_NAMESPACE/mg, interfaceNamespace);
-    //     implCode = implCode.replace(/NAMESPACE/mg, implNamespace);
+        code = code.replace(/SERVICE_NAMESPACE/mg, serviceNamespace);
 
-    //     xml = xml.replace(/ENTITY_NAMESPACE/mg, entityNamespace);
-    //     xml = xml.replace(/NAMESPACE/mg, mapperNamespace);
-    //     xml = xml.replace(/ENTITY_NAME/mg, entityName);
-    //     xml = xml.replace(/TABLE_NAME/mg, tableName);
+        code = code.replace(/NAMESPACE/mg, namespace);
 
-    //     let folders = await findFolders(outputFolder);
+        code = code.replace(/ENTITY_NAME_VAR/mg, varName);
 
-    //     let persistenceFolder = undefined;
-    //     let persistenceXMLFolder = undefined;
-    //     let domainFolder = undefined;
-    //     let commonFolder = undefined;
-        
-    //     for (let folder of folders) {
-    //         if (folder.endsWith('-persistence')) {
-    //             persistenceFolder = path.resolve(folder, 'src/main/java', ns.replace(/\./img, '/'), 'persistence');
-    //             persistenceXMLFolder = path.resolve(folder, 'src/main/resources/mapper');
-    //         } else if (folder.endsWith('-domain')) {
-    //             domainFolder = path.resolve(folder, 'src/main/java', ns.replace(/\./img, '/'), 'domain');
-    //         } else if (folder.endsWith('-common')) {
-    //             commonFolder = path.resolve(folder, 'src/main/java', ns.replace(/\./img, '/'), 'common');
-    //         }
-    //     }
+        code = code.replace(/ENTITY_NAME/mg, entityName);
 
-    //     await utils.mkdir(path.resolve(persistenceFolder, 'entity'));
-    //     await utils.mkdir(path.resolve(persistenceFolder, 'dao'));
-    //     await utils.mkdir(path.resolve(commonFolder, 'dao'));
-    //     await utils.mkdir(persistenceXMLFolder);
-    //     await utils.mkdir(path.resolve(domainFolder, 'service'));
-    //     await utils.mkdir(path.resolve(domainFolder, 'service/impl'));
+        code = code.replace(/FILE_NAME/mg, entityName);
 
-    //     return [
-    //         { name: entityName + '.java', content: entityCode, output: path.resolve(persistenceFolder, 'entity') },
-    //         { name: entityName + 'Dto.java', content: dtoCode, output: path.resolve(commonFolder, 'dto') },
-    //         { name: entityName + 'Mapper.java', content: mapperCode, output: path.resolve(persistenceFolder, 'dao') },
-    //         { name: entityName + 'Service.java', content: interfaceCode, output: path.resolve(domainFolder, 'service') },
-    //         { name: entityName + 'ServiceImpl.java', content: implCode, output: path.resolve(domainFolder, 'service/impl') },
-    //         { name: entityName + '.xml', content: xml, output: persistenceXMLFolder },
-    //     ];
-    // },
+        createReqCode = createReqCode.replace(/NAMESPACE/mg, innerDtoNamespace);
+        createReqCode = createReqCode.replace(/FILE_NAME/mg, entityName);
+
+        updateReqCode = updateReqCode.replace(/NAMESPACE/mg, innerDtoNamespace);
+        updateReqCode = updateReqCode.replace(/FILE_NAME/mg, entityName);
+
+        deleteReqCode = deleteReqCode.replace(/NAMESPACE/mg, innerDtoNamespace);
+        deleteReqCode = deleteReqCode.replace(/FILE_NAME/mg, entityName);
+
+        const dtoOutputFolder = path.resolve(outputFolder.replace(`${path.sep}controller`, ''), 'dto');
+        await utils.mkdir(dtoOutputFolder);
+
+        return [
+            { name: entityName + 'Controller.java', content: code, output: outputFolder },
+            { name: entityName + 'CreateReq.java', content: createReqCode, output: dtoOutputFolder },
+            { name: entityName + 'UpdateReq.java', content: updateReqCode, output: dtoOutputFolder },
+            { name: entityName + 'DeleteReq.java', content: deleteReqCode, output: dtoOutputFolder },
+        ];
+    },
     
     "repo": async (params, args, outputFolder) => {
         let name = args[0] ? args[0] : '';
@@ -328,6 +309,58 @@ exports.commands = {
                 ...params,
                 namespace: serviceNamespace,
             }, args, path.resolve(domainFolder, 'service')),
+
+        ];
+        return outputs;
+    },
+    
+    "crud": async (params, args, outputFolder) => {
+        let name = args[0] ? args[0] : '';
+        if (!name || name.startsWith('-')) {
+            name = params.name || 'Test';
+        }
+        let ns = args[1] ? args[1] : '';
+        if (!ns || ns.startsWith('-')) {
+            ns = params.ns || 'test';
+        }
+
+        let rootNamespace = ns;
+
+        let folders = await findFolders(outputFolder);
+
+        let apiFolder = undefined;
+
+        if (params.apiModule) {
+            apiFolder = path.resolve(folder, apiModule);
+        } else {
+        
+            for (let folder of folders) {
+                if (folder.endsWith('-api')) {
+                    apiFolder = path.resolve(folder, 'src/main/java', ns.replace(/\./img, '/'), 'api');
+                } else if (folder.endsWith('-outapi')) {
+                    apiFolder = path.resolve(folder, 'src/main/java', ns.replace(/\./img, '/'), 'outapi');
+                } else if (folder.endsWith('-innerapi')) {
+                    apiFolder = path.resolve(folder, 'src/main/java', ns.replace(/\./img, '/'), 'innerapi');
+                } else if (folder.endsWith('-adminapi')) {
+                    apiFolder = path.resolve(folder, 'src/main/java', ns.replace(/\./img, '/'), 'adminapi');
+                }
+    
+                if (apiFolder) break;
+            }
+        }
+
+        await utils.mkdir(path.resolve(apiFolder, 'controller'));
+
+        const outputs = [
+
+            ...await exports.commands['repo']({
+                ...params,
+            }, args, outputFolder),
+
+            ...await exports.commands['controller']({
+                ...params,
+                rootNamespace,
+            }, args, path.resolve(apiFolder, 'controller')),
 
         ];
         return outputs;

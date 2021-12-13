@@ -8,6 +8,8 @@ import java.util.Map;
 @Data
 public class FILE_NAMEDto {
 
+    private Long id;
+
     private Long userId;
 
     /**

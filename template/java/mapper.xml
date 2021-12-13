@@ -5,6 +5,7 @@
     <!-- 通用查询映射结果 -->
     <resultMap id="TABLE_NAME_result_map" type="ENTITY_NAMESPACE.ENTITY_NAME">
         <id column="id" property="id" />
+        <result column="user_id" property="userId" />
         <result column="biz" property="biz" typeHandler="com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler" />
         <result column="update_time" property="updateTime" typeHandler="com.ugeez.commons.mybatisplus.entity.handler.DateTimeTypeHandler" />
         <result column="create_time" property="createTime" typeHandler="com.ugeez.commons.mybatisplus.entity.handler.DateTimeTypeHandler" />
@@ -12,6 +13,7 @@
 
     <sql id="TABLE_NAME_full_cols">
         id,
+        user_id,
         biz,
         update_time,
         create_time
