@@ -8,6 +8,9 @@ exports.readFromRemote = async (url) => {
 }
 
 exports.readTemplateFileFromRemote = async (group, file) => {
+    if (process.env.DEBUG) {
+        return exports.readText(path.resolve(__dirname, '../template', group, file));
+    }
     return exports.readFromRemote(`https://gitee.com/lgks701/ugeez-code-templates/raw/master/template/${group}/${file}`);
 }
 

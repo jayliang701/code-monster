@@ -36,6 +36,8 @@ function build(entityDef) {
     let packageDefLineIndex = findPackageDefineLine(javaCodeLines);
     let packageDefLine = javaCodeLines[packageDefLineIndex];
 
+    let addImports = [];
+
     for (let prop of props) {
         if (prop.lineIndex < 0) continue;
         if (prop.type === 'map' || prop.type === 'list') {
@@ -47,7 +49,6 @@ function build(entityDef) {
                 let propLine = javaCodeLines[prop.lineIndex];
                 code = code.replace(propLine, `    ${ann}\n${propLine}`);
 
-                let addImports = [];
 
                 if (!findImport(imports, '.TableField')) {
                     addImports.push('import com.baomidou.mybatisplus.annotation.TableField;');
@@ -57,9 +58,6 @@ function build(entityDef) {
                     addImports.push('import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;');
                     imports.push('com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler');
                 }
-                if (addImports) {
-                    code = code.replace(packageDefLine, `${packageDefLine}\n\n${addImports.join('\n')}`);
-                }
             }
         }
     }
@@ -67,6 +65,14 @@ function build(entityDef) {
     if (code.indexOf('@TableName(') < 0) {
         let tableNameAnno = `@TableName(value = "tb_${tableName}", resultMap = "${tableName}_result_map")`;
         code = code.replace(classDefLine, `${tableNameAnno}\n${classDefLine}`);
+
+        if (!findImport(imports, '.TableName')) {
+            addImports.push('import com.baomidou.mybatisplus.annotation.TableName;');
+            imports.push('com.baomidou.mybatisplus.annotation.TableName');
+        }
+    }
+    if (addImports && addImports.length > 0) {
+        code = code.replace(packageDefLine, `${packageDefLine}\n\n${addImports.join('\n')}`);
     }
 
     let idProp = findIdProp(props);
@@ -74,6 +80,8 @@ function build(entityDef) {
         if (code.indexOf('AbstractEntity<') < 0) {
             code = code.replace(classDefLine, `${classDefLine.trim().replace('{', '')}extends AbstractEntity<${entityName}> {`);
             code = code.replace(packageDefLine, `${packageDefLine}\n\nimport com.ugeez.commons.mybatisplus.entity.AbstractEntity;`);
+
+            code = code.replace('\n' + idProp.lineText, '');
         }
     }
 

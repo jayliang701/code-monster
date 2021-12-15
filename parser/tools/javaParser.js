@@ -246,6 +246,7 @@ const parseNamespace = (javaCodeLines) => {
 const parseJavaField = (javaCodeLines, field) => {
     let lineIndex = 0;
     for (let line of javaCodeLines) {
+        let originalLineText = line;
         line = line.trim();
         if (isPropLine(line) && line.indexOf(` ${field}`) > 0) {
             let scope = line.substr(0, line.indexOf(' ')).trim();
@@ -272,6 +273,7 @@ const parseJavaField = (javaCodeLines, field) => {
             let jsType = JAVA_TYPE_MAPPING[part];
 
             return {
+                lineText: originalLineText,
                 annotations,
                 lineIndex,
                 scope,
