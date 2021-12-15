@@ -44,17 +44,20 @@ public class ENTITY_NAMEController {
 
     @PostMapping(value = "/create")
     public IdDTO<Long> create(@Valid @RequestBody ENTITY_NAMECreateReq req) {
+        //CREATE BEGINE
         ENTITY_NAME doc = ENTITY_NAME_VARService.create(req.getUserId(), req.getBiz());
+        //CREATE END
         return new IdDTO<>(doc.getId());
     }
 
     @PostMapping(value = "/update")
     public void update(@Valid @RequestBody ENTITY_NAMEUpdateReq req) {
         ENTITY_NAME doc = new ENTITY_NAME();
+        //UPDATE BEGINE
         doc.setId(req.getId());
         doc.setUserId(req.getUserId());
         doc.setBiz(req.getBiz());
-
+        //UPDATE END
         boolean isUpdated = ENTITY_NAME_VARService.updateById(doc);
         if (!isUpdated) {
             throw new BusinessException(ErrorCode.DATA_NOT_EXIST);
@@ -69,6 +72,60 @@ public class ENTITY_NAMEController {
         }
     }
 }
+
+<JS>
+
+function build(entityDef) {
+
+    const { javaCode, imports, javaCodeLines, sql, entityName, props, tableName, rootNamespace, namespace } = entityDef;
+
+    const utils = require('./utils');
+    const { findClassDefineLine, findPackageDefineLine, findIdProp, findProp, findAnnotation, findImport } = require('./parser/tools/javaParser');
+
+    let code = originalCode;
+
+    let newCreateMethod = 'ENTITY_NAME doc = ENTITY_NAME_VARService.create(';
+    let tmp = [];
+    let sep = ', ';
+    let indent = '        ';
+    if (props.length > 4) {
+        sep = ',\n';
+        for (let i = 0; i < '    ENTITY_NAME doc = ENTITY_NAME_VARService.create('.length; i ++) {
+            sep += ' ';
+        }
+    }
+    for (let prop of props) {
+        if (prop.field === 'id' || prop.field === 'deleted' || prop.field === 'createTime' ||prop.field === 'updateTime') continue;
+        tmp.push(`req.get${prop.field.charAt(0).toUpperCase() + prop.field.substr(1)}()`);
+    }
+    newCreateMethod = `${newCreateMethod}${tmp.join(sep)});\n`;
+
+    let createStartIndex = code.indexOf('//CREATE BEGINE');
+    code = code.substr(0, createStartIndex) + newCreateMethod + code.substr(code.indexOf('//CREATE END') + 13);
+
+    let newUpdates = '';
+    for (let prop of props) {
+        if (prop.field === 'id' || prop.field === 'deleted' || prop.field === 'createTime' ||prop.field === 'updateTime') continue;
+        let param = `req.get${prop.field.charAt(0).toUpperCase() + prop.field.substr(1)}()`;
+        newUpdates += `doc.set${prop.field.charAt(0).toUpperCase() + prop.field.substr(1)}(${param});\n${indent}`;
+    }
+
+    let updateStartIndex = code.indexOf('//UPDATE BEGINE');
+    code = code.substr(0, updateStartIndex) + newUpdates + code.substr(code.indexOf('//UPDATE END') + 13);
+
+    for (let imp of imports) {
+        if (imp.startsWith('java.') && !imp.startsWith('java.util.')) {
+            code = code.replace(`import java.util.*;`, `import ${imp};\nimport java.util.*;`)
+        }
+    }
+    
+    return {
+        code,
+        entityDef,
+    };
+}
+
+</JS>
 
 
 

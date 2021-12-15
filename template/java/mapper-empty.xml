@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="NAMESPACE.ENTITY_NAMEMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="TABLE_NAME_result_map" type="ENTITY_NAMESPACE.ENTITY_NAME">
+        <!-- RESULT_MAP_MAPPINGS -->
+    </resultMap>
+
+    <sql id="TABLE_NAME_full_cols">
+        <!-- RESULT_MAP_COLS -->
+    </sql>
+
+    <select id="search" resultMap="TABLE_NAME_result_map">
+        select
+        <include refid="TABLE_NAME_full_cols"></include>
+        from tb_TABLE_NAME ${filter}
+    </select>
+
+</mapper>
+
+<JS>
+
+function build(entityDef) {
+
+    const { javaCode, imports, javaCodeLines, sql, entityName, props, tableName, rootNamespace, namespace } = entityDef;
+
+    const utils = require('./utils');
+    const { findClassDefineLine, findPackageDefineLine, findIdProp, findProp, findAnnotation, findImport } = require('./parser/tools/javaParser');
+
+    let code = originalCode;
+    
+    let cols = [];
+    for (let prop of props) {
+        cols.push(prop.dbField || prop.field);
+    }
+    code = code.replace(`<!-- RESULT_MAP_COLS -->`, cols.join(',\n        '));
+    
+    let mappings = [];
+    for (let prop of props) {
+        let typeHandler = undefined;
+        let ann = findAnnotation(prop.annotations, '@TableField');
+        if (ann && ann.indexOf('typeHandler')) {
+            typeHandler = ann.substr(ann.indexOf('typeHandler') + 11).replace('=', '').replace(')', '').replace('.class', '').trim();
+            
+            let imp = findImport(imports, '.' + typeHandler);
+            if (imp) {
+                typeHandler = imp;
+            }
+        }
+        let mapping = `<result column="${prop.dbField}" property="${prop.field}" ${typeHandler ? `typeHandler="${typeHandler}"` : ''}/>`;
+        mappings.push(mapping);
+    }
+    code = code.replace(`<!-- RESULT_MAP_MAPPINGS -->`, mappings.join(',\n        '));
+
+    let userIdProp = findProp(props, 'userId');
+    if (userIdProp) {
+        let method = `<select id="selectLatestByUserId" resultMap="TABLE_NAME_result_map">\n \
+        select \n\
+        <include refid="TABLE_NAME_full_cols"></include> \n\
+        from tb_TABLE_NAME \n\
+        where user_id = #{userId} \n\
+        order by id desc \n\
+        limit 0, 1 \n\
+    </select>`;
+
+        code = code.replace(`<select id="search"`, `${method}\n\n    <select id="search"`);
+    }
+
+    return {
+        code,
+        entityDef,
+    };
+}
+
+</JS>

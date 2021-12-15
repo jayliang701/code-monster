@@ -1,5 +1,15 @@
 const path = require('path');
 const fs = require('fs');
+const axios = require('axios');
+
+exports.readFromRemote = async (url) => {
+    const { data } = await axios.get(url);
+    return data;
+}
+
+exports.readTemplateFileFromRemote = async (group, file) => {
+    return exports.readFromRemote(`https://gitee.com/lgks701/ugeez-code-templates/raw/master/template/${group}/${file}`);
+}
 
 exports.readFile = (url, option) => {
     return new Promise((resolve, reject) => {

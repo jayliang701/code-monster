@@ -1,5 +1,6 @@
 
 const utils = require('../utils');
+const { describeEntityClass } = require('./tools/javaParser');
 const path = require('path');
 const fs = require('fs');
 const capitalization = require('capitalization');
@@ -41,6 +42,45 @@ const findFolders = (folder) => {
     });
 }
 
+const buildCode = (code, entityDef) => {
+    if (code.indexOf('</JS>') < 0) {
+        return code;
+    }
+
+    let originalCode = code.substr(0, code.indexOf('<JS>'));
+
+    if (!entityDef) {
+        return originalCode;
+    }
+
+    let jsCode = code.substr(code.indexOf('<JS>'), code.indexOf('</JS>')).replace('<JS>', '').replace('</JS>', '');
+
+    const vm = require('vm');
+    let wrapper = `(function(){ ${jsCode};  return build(${JSON.stringify(entityDef)});})();`;
+    const script = new vm.Script(wrapper);
+    const sandbox = {
+        require: (modulePath) => {
+            return require(path.resolve(__dirname, '../', modulePath));
+        },
+        originalCode,
+        console: {
+            log: (...rest) => {
+                console.log.apply(console, rest);
+            }
+        },
+    };
+    const context = new vm.createContext(sandbox);
+    const result = script.runInContext(context);
+
+    code = result.code;
+
+    for (let key in result.entityDef) {
+        entityDef[key] = result.entityDef[key];
+    }
+
+    return code;
+}
+
 exports.commands = {
 
     "class": async (params, args, outputFolder) => {
@@ -49,7 +89,7 @@ exports.commands = {
             name = params.name || 'Test';
         }
         let className = name + '';
-        let code = await utils.readText(path.resolve(folder, 'class.java'));
+        let code = await utils.readTemplateFileFromRemote('java', 'class.java');
 
         let namespace = params.namespace || makeNamespace(outputFolder);
         code = code.replace(/NAMESPACE/mg, namespace);
@@ -66,7 +106,9 @@ exports.commands = {
             name = params.name || 'Test';
         }
         let className = name + '';
-        let code = await utils.readText(path.resolve(folder, 'entity.java'));
+        let code = params.entityCode ? params.entityCode : (await utils.readTemplateFileFromRemote('java', 'entity.java'));
+
+        code = buildCode(code, params.entityDef);
 
         let tableName = utils.camelCaseToUnderline(className);
 
@@ -91,7 +133,10 @@ exports.commands = {
             name = params.name || 'Test';
         }
         let className = name + '';
-        let code = await utils.readText(path.resolve(folder, 'dto.java'));
+        let code = await utils.readTemplateFileFromRemote('java', 'dto.java');
+        code = buildCode(code, params.entityDef);
+        code = code.replace('//DTO PROPS BEGINE', '');
+        code = code.replace('//DTO PROPS END', '');
 
         let namespace = params.namespace || makeNamespace(outputFolder);
         code = code.replace(/NAMESPACE/mg, namespace);
@@ -110,8 +155,13 @@ exports.commands = {
         let entityName = name;
         let tableName = utils.camelCaseToUnderline(name);
 
-        let code = await utils.readText(path.resolve(folder, 'mapper.java'));
-        let xml = await utils.readText(path.resolve(folder, 'mapper.xml'));
+        let code = await utils.readTemplateFileFromRemote('java', 'mapper.java');
+        code = buildCode(code, params.entityDef);
+        code = code.replace('//MAPPER METHODS BEGINE', '');
+        code = code.replace('//MAPPER METHODS END', '');
+
+        let xml = await utils.readTemplateFileFromRemote('java', params.entityDef ? 'mapper-empty.xml' : 'mapper.xml');
+        xml = buildCode(xml, params.entityDef);
 
         let namespace = params.namespace || makeNamespace(outputFolder);
         let entityNamespace = namespace.replace('.dao', '.entity');
@@ -150,8 +200,11 @@ exports.commands = {
         let className = name + 'Service';
         let implName = name + 'ServiceImpl';
 
-        let code = await utils.readText(path.resolve(folder, 'service-interface.java'));
-        let implCode = await utils.readText(path.resolve(folder, 'service-impl.java'));
+        let code = await utils.readTemplateFileFromRemote('java', 'service-interface.java');
+        code = buildCode(code, params.entityDef);
+
+        let implCode = await utils.readTemplateFileFromRemote('java', 'service-impl.java');
+        implCode = buildCode(implCode, params.entityDef);
 
         let namespace = params.namespace || makeNamespace(outputFolder);
         let entityNamespace = namespace.replace('.domain.service', '.persistence.entity');
@@ -189,10 +242,27 @@ exports.commands = {
         let entityName = name;
         let varName = entityName.charAt(0).toLowerCase() + entityName.substr(1);
 
-        let code = await utils.readText(path.resolve(folder, 'controller.java'));
-        let createReqCode = await utils.readText(path.resolve(folder, 'create-req.java'));
-        let updateReqCode = await utils.readText(path.resolve(folder, 'update-req.java'));
-        let deleteReqCode = await utils.readText(path.resolve(folder, 'delete-req.java'));
+        let code = await utils.readTemplateFileFromRemote('java', 'controller.java');
+        code = buildCode(code, params.entityDef);
+        code = code.replace('//CREATE BEGINE', '');
+        code = code.replace('//CREATE END', '');
+        code = code.replace('//UPDATE BEGINE', '');
+        code = code.replace('//UPDATE END', '');
+
+        let createReqCode = await utils.readTemplateFileFromRemote('java', 'create-req.java');
+        createReqCode = buildCode(createReqCode, params.entityDef);
+        createReqCode = createReqCode.replace('//DTO PROPS BEGINE', '');
+        createReqCode = createReqCode.replace('//DTO PROPS END', '');
+
+        let updateReqCode = await utils.readTemplateFileFromRemote('java', 'update-req.java');
+        updateReqCode = buildCode(updateReqCode, params.entityDef);
+        updateReqCode = updateReqCode.replace('//DTO PROPS BEGINE', '');
+        updateReqCode = updateReqCode.replace('//DTO PROPS END', '');
+
+        let deleteReqCode = await utils.readTemplateFileFromRemote('java', 'delete-req.java');
+        deleteReqCode = buildCode(deleteReqCode, params.entityDef);
+        deleteReqCode = deleteReqCode.replace('//DTO PROPS BEGINE', '');
+        deleteReqCode = deleteReqCode.replace('//DTO PROPS END', '');
 
         let namespace = params.namespace || makeNamespace(outputFolder);
         let rootNamespace = params.rootNamespace;
@@ -315,13 +385,13 @@ exports.commands = {
     },
     
     "crud": async (params, args, outputFolder) => {
-        let name = args[0] ? args[0] : '';
+        let name = params.name ? params.name : (args[0] ? args[0] : '');
         if (!name || name.startsWith('-')) {
-            name = params.name || 'Test';
+            name = 'Test';
         }
-        let ns = args[1] ? args[1] : '';
+        let ns = params.ns ? params.ns : (params.namespace ? params.namespace : (args[1] ? args[1] : ''));
         if (!ns || ns.startsWith('-')) {
-            ns = params.ns || 'test';
+            ns = 'test';
         }
 
         let rootNamespace = ns;
@@ -365,4 +435,25 @@ exports.commands = {
         ];
         return outputs;
     },
+    
+    "data2crud": async (params, args, outputFolder) => {
+        let filePath = args[0] ? args[0] : '';
+        
+        if (!filePath) {
+            throw new Error('未指定目标实体类');
+        }
+
+        let entityDef = await describeEntityClass(filePath);
+
+        let { javaCode, javaCodeLines, sql, entityName, props, tableName, projectRoot, rootNamespace, namespace } = entityDef;
+
+        // return [];
+        
+        let outputs = await exports.commands.crud({
+            ...params,
+            entityDef,
+        }, [ entityName, rootNamespace ], outputFolder);
+
+        return outputs;
+    }
 };
