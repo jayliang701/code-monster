@@ -48,10 +48,10 @@ function build(entityDef) {
                 typeHandler = imp;
             }
         }
-        let mapping = `<result column="${prop.dbField}" property="${prop.field}" ${typeHandler ? `typeHandler="${typeHandler}"` : ''}/>`;
+        let mapping = `<${prop.field === 'id' ? 'id' : 'result'} column="${prop.dbField}" property="${prop.field}" ${typeHandler ? `typeHandler="${typeHandler}"` : ''}/>`;
         mappings.push(mapping);
     }
-    code = code.replace(`<!-- RESULT_MAP_MAPPINGS -->`, mappings.join(',\n        '));
+    code = code.replace(`<!-- RESULT_MAP_MAPPINGS -->`, mappings.join('\n        '));
 
     let userIdProp = findProp(props, 'userId');
     if (userIdProp) {

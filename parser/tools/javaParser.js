@@ -289,14 +289,26 @@ const parseJavaField = (javaCodeLines, field) => {
     return undefined;
 }
 
-const describeEntityClass = async (filePath) => {
-    let entityName = filePath.substring(filePath.lastIndexOf(path.sep) + 1).replace('.java', '');
-    if (entityName.indexOf('.')) {
-        entityName = entityName.substr(0, entityName.indexOf('.'));
+const describeEntityClass = async (...rest) => {
+
+    let javaCode, entityName, filePath;
+
+    if (rest.length === 1) {
+        filePath = rest[0];
+
+        entityName = filePath.substring(filePath.lastIndexOf(path.sep) + 1).replace('.java', '');
+        if (entityName.indexOf('.')) {
+            entityName = entityName.substr(0, entityName.indexOf('.'));
+        }
+
+        javaCode = await utils.readText(filePath);
+    } else {
+        entityName = rest[0];
+        javaCode = rest[1];
     }
+
     let tableName = utils.camelCaseToUnderline(entityName);
 
-    let javaCode = await utils.readText(filePath);
     let javaCodeLines = javaCode.split('\n');
 
     let jsCode = javaToJavascript(javaCode);
@@ -307,7 +319,7 @@ const describeEntityClass = async (filePath) => {
 
     let namespaceDef = parseNamespace(javaCodeLines);
     if (!namespaceDef) {
-        throw new Error('无法解析Java类命名空间 ---> ' + filePath);
+        throw new Error('无法解析Java类命名空间 ---> ' + (filePath || entityName));
     }
 
     let imports = parseImports(javaCodeLines);
@@ -380,17 +392,9 @@ const describeEntityClass = async (filePath) => {
 
     sql += `\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci${ tableComment ? ` COMMENT '${tableComment.replace(/'/img, '\\\'')}'` : '' };`;
 
-    console.log('---------------------------------------- SQL -----------------------------------------');
-    console.log(sql);
-    console.log('---------------------------------------- SQL -----------------------------------------');
-
-    let srcBlock = `${path.sep}src${path.sep}main${path.sep}java`;
-    let projectRoot = filePath;
-    if (projectRoot.indexOf(srcBlock) > 0) {
-        projectRoot = projectRoot.substr(0, projectRoot.indexOf(srcBlock));
-    } else {
-        projectRoot = undefined;
-    }
+    // console.log('---------------------------------------- SQL -----------------------------------------');
+    // console.log(sql);
+    // console.log('---------------------------------------- SQL -----------------------------------------');
 
     return {
         imports,
@@ -402,7 +406,6 @@ const describeEntityClass = async (filePath) => {
         tableName,
         namespace: namespaceDef.namespace,
         rootNamespace: namespaceDef.rootNamespace,
-        projectRoot,
     };
 }
 

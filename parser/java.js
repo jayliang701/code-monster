@@ -118,6 +118,15 @@ exports.commands = {
         code = code.replace(/FILE_NAME/mg, className);
 
         code = code.replace(/TABLE_NAME/mg, tableName);
+
+        let entityDef = params.entityDef;
+        if (!entityDef) {
+            entityDef = await describeEntityClass(className, code);
+            code = code + `\n\n/*---------------------------------------- SQL -----------------------------------------\n`;
+            code = code + entityDef.sql;
+            code = code + `\n---------------------------------------- SQL -----------------------------------------*/\n`;
+        }
+
         let outputs = [
             { name: className + '.java', content: code, output: outputFolder }
         ];
@@ -445,7 +454,7 @@ exports.commands = {
 
         let entityDef = await describeEntityClass(filePath);
 
-        let { javaCode, javaCodeLines, sql, entityName, props, tableName, projectRoot, rootNamespace, namespace } = entityDef;
+        let { javaCode, javaCodeLines, sql, entityName, props, tableName, rootNamespace, namespace } = entityDef;
 
         // return [];
         

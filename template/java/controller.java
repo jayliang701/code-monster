@@ -103,15 +103,15 @@ function build(entityDef) {
     let createStartIndex = code.indexOf('//CREATE BEGINE');
     code = code.substr(0, createStartIndex) + newCreateMethod + code.substr(code.indexOf('//CREATE END') + 13);
 
-    let newUpdates = '';
+    let newUpdates = [];
     for (let prop of props) {
-        if (prop.field === 'id' || prop.field === 'deleted' || prop.field === 'createTime' ||prop.field === 'updateTime') continue;
+        if (prop.field === 'deleted' || prop.field === 'createTime' ||prop.field === 'updateTime') continue;
         let param = `req.get${prop.field.charAt(0).toUpperCase() + prop.field.substr(1)}()`;
-        newUpdates += `doc.set${prop.field.charAt(0).toUpperCase() + prop.field.substr(1)}(${param});\n${indent}`;
+        newUpdates.push(`doc.set${prop.field.charAt(0).toUpperCase() + prop.field.substr(1)}(${param});`);
     }
 
     let updateStartIndex = code.indexOf('//UPDATE BEGINE');
-    code = code.substr(0, updateStartIndex) + newUpdates + code.substr(code.indexOf('//UPDATE END') + 13);
+    code = code.substr(0, updateStartIndex) + newUpdates.join(`\n${indent}`) + '\n' + code.substr(code.indexOf('//UPDATE END') + 13);
 
     for (let imp of imports) {
         if (imp.startsWith('java.') && !imp.startsWith('java.util.')) {

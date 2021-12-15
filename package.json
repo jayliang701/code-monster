@@ -1,6 +1,6 @@
 {
   "name": "codemonster",
-  "version": "1.1.8",
+  "version": "1.1.9",
   "description": "A utility tool to generate code template for lazy engineers.",
   "main": "index.js",
   "directories": {
