@@ -297,7 +297,7 @@ const describeEntityClass = async (...rest) => {
         filePath = rest[0];
 
         entityName = filePath.substring(filePath.lastIndexOf(path.sep) + 1).replace('.java', '');
-        if (entityName.indexOf('.')) {
+        if (entityName.indexOf('.') > 0) {
             entityName = entityName.substr(0, entityName.indexOf('.'));
         }
 
