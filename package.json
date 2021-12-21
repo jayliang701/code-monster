@@ -26,6 +26,7 @@
   "dependencies": {
     "axios": "^0.24.0",
     "capitalization": "^1.0.0",
-    "java-to-javascript": "^0.1.15"
+    "java-to-javascript": "^0.1.15",
+    "vm2": "^3.9.5"
   }
 }

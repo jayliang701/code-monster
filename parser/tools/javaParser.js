@@ -4,6 +4,10 @@ const path = require('path');
 const fs = require('fs');
 const javaToJavascript = require('java-to-javascript');
 
+const JAVA_DATE_TIME_TYPES = [
+    'datetime', 'date', 'localdatetime', 'localdate', 'offsetdatetime', 'offsetdate'
+];
+
 const JAVA_TYPE_MAPPING = {
     long: 'number',
     double: 'number',
@@ -243,6 +247,79 @@ const parseNamespace = (javaCodeLines) => {
     };
 }
 
+const convertJSType = (javaType) => {
+    let jsType = javaType;
+    if (jsType.indexOf('<') > 0) {
+        //List or Map
+        jsType = jsType.substring(0, jsType.indexOf('<')).trim();
+    }
+    jsType = jsType.toLowerCase();
+    return JAVA_TYPE_MAPPING[jsType] || 'object';
+}
+
+const convertTSType = (jsType, javaType) => {
+    let tsType = {
+        type: jsType,
+        keyJsType: undefined,
+        subJsType: undefined,
+        keyTsType: undefined,
+        subTsType: undefined,
+        keyJavaType: undefined,
+        subJavaType: undefined,
+    };
+    javaType = javaType.replace(/\s/img, '');
+    if (jsType === 'object') {
+        tsType.type = javaType;
+    } else if (jsType === 'date' || jsType === 'datetime') {
+        tsType.type = 'number';
+    } else if (jsType === 'map') {
+        if (javaType.endsWith('<String,Object>')) {
+            tsType.type = 'SourceData';
+        }
+    } else if (jsType === 'array') {
+
+    }
+
+    if (javaType.indexOf('>') > 0) {
+        let gType = javaType.substring(javaType.indexOf('<') + 1, javaType.indexOf('>'));
+        let types = gType.split(',');
+
+        if (types.length > 1) {
+            tsType.keyJavaType = types[0];
+            tsType.valueJavaType = types[1];
+        } else {
+            tsType.valueJavaType = types[0];
+        }
+
+        if (tsType.keyJavaType) {
+            let keyJsType = convertJSType(tsType.keyJavaType);
+            let keyTsType = convertTSType(keyJsType, tsType.keyJavaType);
+            tsType.keyJsType = keyJsType;
+            tsType.keyTsType = keyTsType;
+        }
+        
+        let valueJsType = convertJSType(tsType.valueJavaType);
+        let valueTsType = convertTSType(valueJsType, tsType.valueJavaType);
+        tsType.valueJsType = valueJsType;
+        tsType.valueTsType = valueTsType;
+
+        if (jsType === 'map' && tsType.type !== 'SourceData') {
+            tsType.type = `Record<${tsType.keyTsType.type}, ${valueTsType.type}>`;
+        } else if (jsType === 'array') {
+            tsType.type = `${valueTsType.type}[]`;
+        } else if (jsType === 'object') {
+            tsType.type = tsType.type.replace(`<${tsType.valueJavaType}>`, `<${tsType.valueTsType.type}>`);
+        }
+
+    }
+
+    if (global.config && global.config.frontend && String(global.config.frontend.removeDtoInName) == 'true' && tsType.type.endsWith('Dto')) {
+        tsType.type = tsType.type.substr(0, tsType.type.length - 3);
+    }
+
+    return tsType;
+}
+
 const parseJavaField = (javaCodeLines, field) => {
     let lineIndex = 0;
     for (let line of javaCodeLines) {
@@ -256,13 +333,15 @@ const parseJavaField = (javaCodeLines, field) => {
             let part = line.replace(` ${field}`, '').replace(';', '').trim();
             part = part.substring(part.indexOf(' ') + 1).trim();
             let javaType = part;
+            let jsType = convertJSType(javaType);
+
+            if (field === 'id' || field.endsWith('Id')) {
+                if (javaType.toLowerCase() === 'long') {
+                    jsType = 'string';
+                }
+            }
 
             let comment = '';
-            if (part.indexOf('<') > 0) {
-                //List or Map
-                part = part.substring(0, part.indexOf('<')).trim();
-            }
-            part = part.toLowerCase();
 
             if (lineIndex > 2) {
                 comment = parseComment(javaCodeLines, lineIndex - 1);
@@ -270,7 +349,8 @@ const parseJavaField = (javaCodeLines, field) => {
 
             let annotations = parseAnnotation(javaCodeLines, lineIndex - 1);
 
-            let jsType = JAVA_TYPE_MAPPING[part];
+
+            let tsType = convertTSType(jsType, javaType);
 
             return {
                 lineText: originalLineText,
@@ -282,6 +362,7 @@ const parseJavaField = (javaCodeLines, field) => {
                 type: part,
                 javaType,
                 jsType,
+                tsType,
             };
         }
         lineIndex ++;
@@ -289,45 +370,147 @@ const parseJavaField = (javaCodeLines, field) => {
     return undefined;
 }
 
-const describeEntityClass = async (...rest) => {
+// const outputJavaP = async (javaClassFile) => {
+//     const util = require('util');
+//     const exec = util.promisify(require('child_process').exec);
+//     const { stdout, stderr } = await exec('javap ' + javaClassFile);
+//     if (stderr) throw new Error(stderr);
 
-    let javaCode, entityName, filePath;
+//     let javaCode = stdout;
+//     let classNameLine = javaCode.match(/(public)?\s?class\s+[a-zA-Z0-9_\.]+\s+\{/img)[0].replace(/(public)?\s?class\s+/, '').replace('{', '').trim();
+//     let package = classNameLine.substr(0, classNameLine.lastIndexOf('.'));
+//     let className = classNameLine.substr(classNameLine.lastIndexOf('.') + 1);
+
+//     const lines = javaCode.substr(javaCode.indexOf(classNameLine) + classNameLine.length).split('\n');
+
+//     for (let line of lines) {
+//         line = line.trim();
+//         if (!line.endsWith(');')) continue;
+//         if (line.indexOf(package + '.' + className + '(') >= 0) continue;
+//         let scope = line.match(/{(public)|(private)|(protected)}/);
+//         console.log(scope)
+//     }
+
+// }
+
+const parseMethodParam = (str) => {
+    let parts = str.trim().split(/\s/);
+    let annotations = [];
+    let javaType, jsType, tsType, name;
+    for (let part of parts) {
+        if (part.startsWith('@')) {
+            annotations.push(part.substr(1));
+        } else {
+            if (!javaType) {
+                javaType = part;
+                jsType = convertJSType(javaType);
+                tsType = convertTSType(jsType, javaType);
+            }
+        }
+    }
+    return {
+        name: parts[parts.length - 1],
+        jsType,
+        tsType,
+        javaType,
+        annotations,
+    }
+}
+
+const parseMethod = (javaCodeLines, namespace, imports, method) => {
+    let lineIndex = -1;
+    for (let line of javaCodeLines) {
+        lineIndex ++;
+        let matches = line.match(new RegExp(`\\s${method}\\s?\\(`));
+        if (!matches) continue;
+
+        let scope = line.match(/(public|private|protected)/);
+        if (scope) {
+            scope = scope[0];
+        } else {
+            scope = 'public';
+        }
+
+        line = line.replace(/(public|private|protected)\s+/, '').replace(/\s+\{\s+/, '').trim();
+        
+        let argsStr = line.substring(line.lastIndexOf('(') + 1, line.lastIndexOf(')')).replace(/\s?,\s?/img, ',');
+        argsStr = argsStr.split(',');
+
+        let params = [];
+        for (let argStr of argsStr) {
+            let arg = parseMethodParam(argStr);
+            params.push(arg);
+        }
+
+        let returnType = {
+            type: line.split(/\s/)[0],
+            namespace: '',
+            jsType: undefined,
+            tsType: undefined,
+        };
+        let jsType = convertJSType(returnType.type);
+        let tsType = convertTSType(jsType, returnType.type);
+        
+        if (jsType === 'object') {
+            const returnTypeImport = findImport(imports, returnType.type);
+            if (!returnTypeImport) {
+                returnType.namespace = namespace;
+            } else {
+                returnType.namespace = returnTypeImport.substr(0, returnTypeImport.lastIndexOf('.'));
+            }
+        }
+        returnType.jsType = jsType;
+        returnType.tsType = tsType;
+
+        //find annotations
+        let annotations = [];
+        if (lineIndex > 0) {
+            annotations = parseAnnotation(javaCodeLines, lineIndex - 1);
+        }
+
+        return {
+            name: method,
+            scope,
+            params,
+            returnType,
+            annotations,
+        };
+    }
+}
+
+const describeClass = async (...rest) => {
+
+    let javaCode, className, filePath;
 
     if (rest.length === 1) {
         filePath = rest[0];
 
-        entityName = filePath.substring(filePath.lastIndexOf(path.sep) + 1).replace('.java', '');
-        if (entityName.indexOf('.') > 0) {
-            entityName = entityName.substr(0, entityName.indexOf('.'));
+        className = filePath.substring(filePath.lastIndexOf(path.sep) + 1).replace('.java', '');
+        if (className.indexOf('.') > 0) {
+            className = className.substr(0, className.indexOf('.'));
         }
 
         javaCode = await utils.readText(filePath);
     } else {
-        entityName = rest[0];
+        className = rest[0];
         javaCode = rest[1];
     }
-
-    let tableName = utils.camelCaseToUnderline(entityName);
 
     let javaCodeLines = javaCode.split('\n');
 
     let jsCode = javaToJavascript(javaCode);
     jsCode = jsCode.replace(/\s+(extends|implements)\s+[a-zA-Z0-9_]+/img, '');
-    let entity = eval(`(function() { ` + jsCode + ` return new ${entityName}(); })()`);
+    let entity = eval(`(function() { ` + jsCode + ` return new ${className}(); })()`);
 
     let propsFields = Object.keys(entity);
 
     let namespaceDef = parseNamespace(javaCodeLines);
     if (!namespaceDef) {
-        throw new Error('无法解析Java类命名空间 ---> ' + (filePath || entityName));
+        throw new Error('无法解析Java类命名空间 ---> ' + (filePath || className));
     }
 
     let imports = parseImports(javaCodeLines);
 
-    let classDefineLineIndex = findClassDefineLine(javaCodeLines);
-    let tableComment = classDefineLineIndex > 0 ? parseComment(javaCodeLines, classDefineLineIndex - 1) : '';
-    let sql = `CREATE TABLE \`tb_${tableName}\` (\n`;
-    let cols = [];
     let props = [];
     for (let prop of propsFields) {
 
@@ -336,6 +519,45 @@ const describeEntityClass = async (...rest) => {
 
         props.push(javaField);
     }
+
+    let methods = [];
+    let methodNames = Object.getOwnPropertyNames(entity.constructor.prototype);
+    for (let methodName of methodNames) {
+        if (methodName === 'constructor') continue;
+        let method = parseMethod(javaCodeLines, namespaceDef.namespace, imports, methodName);
+        methods.push(method);
+    }
+
+    let jsType = convertJSType(className);
+    let tsType = convertTSType(jsType, className);
+
+    return {
+        javaType: className,
+        jsType,
+        tsType,
+        imports,
+        javaCodeLines,
+        javaCode,
+        jsCode,
+        className,
+        props,
+        methods,
+        namespace: namespaceDef.namespace,
+        rootNamespace: namespaceDef.rootNamespace,
+    };
+}
+
+const describeEntityClass = async (...rest) => {
+
+    let classDef = await describeClass.apply(null, rest);
+    let { className, javaCode, javaCodeLines, props } = classDef;
+
+    let tableName = utils.camelCaseToUnderline(className);
+
+    let classDefineLineIndex = findClassDefineLine(javaCodeLines);
+    let tableComment = classDefineLineIndex > 0 ? parseComment(javaCodeLines, classDefineLineIndex - 1) : '';
+    let sql = `CREATE TABLE \`tb_${tableName}\` (\n`;
+    let cols = [];
 
     if (javaCode.indexOf('AbstractEntity<')) {
         let hasId = findProp(props, 'id');
@@ -350,6 +572,8 @@ const describeEntityClass = async (...rest) => {
                 comment: '',
                 type: 'long',
                 javaType: 'Long',
+                jsType: 'long',
+                tsType: convertTSType('number', 'Long'),
             });
         }
 
@@ -361,6 +585,8 @@ const describeEntityClass = async (...rest) => {
                 comment: '',
                 type: 'localdatetime',
                 javaType: 'LocalDateTime',
+                jsType: 'datetime',
+                tsType: convertTSType('datetime', 'LocalDateTime'),
             });
         }
 
@@ -372,6 +598,8 @@ const describeEntityClass = async (...rest) => {
                 comment: '',
                 type: 'localdatetime',
                 javaType: 'LocalDateTime',
+                jsType: 'datetime',
+                tsType: convertTSType('datetime', 'LocalDateTime'),
             });
         }
     }
@@ -392,20 +620,11 @@ const describeEntityClass = async (...rest) => {
 
     sql += `\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci${ tableComment ? ` COMMENT '${tableComment.replace(/'/img, '\\\'')}'` : '' };`;
 
-    // console.log('---------------------------------------- SQL -----------------------------------------');
-    // console.log(sql);
-    // console.log('---------------------------------------- SQL -----------------------------------------');
-
     return {
-        imports,
-        javaCodeLines,
-        javaCode,
-        entityName,
+        ...classDef,
+        entityName: className,
         sql,
-        props,
         tableName,
-        namespace: namespaceDef.namespace,
-        rootNamespace: namespaceDef.rootNamespace,
     };
 }
 
@@ -413,6 +632,7 @@ module.exports = {
     parseComment,
     parseJavaField,
     parseNamespace,
+    describeClass,
     describeEntityClass,
     findClassDefineLine,
     findPackageDefineLine,
