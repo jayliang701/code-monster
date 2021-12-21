@@ -1,4 +1,5 @@
 
+const fs = require('fs');
 const path = require('path');
 const utils = require('./utils');
 
@@ -24,6 +25,30 @@ const startup = () => {
     }
 
     if (!global.APP_ROOT) global.APP_ROOT = path.parse(process.mainModule.filename).dir;
+
+    global.classDefs = {};
+
+    if (process.env.CONFIG) {
+        const config = JSON.parse(fs.readFileSync(process.env.CONFIG, 'utf-8'));
+        global.config = config;
+        global.config.backend = global.config.backend || {};
+        global.config.frontend = global.config.frontend || {};
+    } else {
+        global.config = {
+            backend: {},
+            frontend: {},
+        };
+    }
+    if (!global.config.backend.root) {
+        global.config.backend.root = process.cwd();
+    }
+    if (!global.config.frontend.root) {
+        global.config.frontend.root = process.cwd();
+        try {
+            fs.accessSync(path.resolve(global.config.frontend.root, 'src'), fs.constants.F_OK);
+            global.config.frontend.root = path.resolve(global.config.frontend.root, 'src');
+        } catch {}
+    }
 }
 
 const exec = (vars, args) => {
