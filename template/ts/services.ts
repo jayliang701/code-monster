@@ -90,7 +90,7 @@ async function buildAPI(method, entityDef) {
                 convertMethods[method.returnType.tsType.valueTsType.type] = convertMethod;
             }
 
-            returnStr = `return convertSearchResult(res, (obj) => {\n        const item: ${method.returnType.tsType.valueTsType.type} = ${convertMethod.name}(obj);\n        return item;\n    });\n`;
+            returnStr = `return convertSearchResult<${method.returnType.tsType.valueTsType.type}>(res, (obj) => {\n        const item: ${method.returnType.tsType.valueTsType.type} = ${convertMethod.name}(obj);\n        return item;\n    });\n`;
         } else if (method.returnType.jsType === 'object') {
             let retClassDef = await findClassDef(method.returnType.type);
             relativeTypes[method.returnType.tsType.type] = retClassDef;
@@ -147,7 +147,6 @@ async function buildAPI(method, entityDef) {
             
             let dtoIdProp = findOnlyIdProp(dtoDef);
             if (dtoIdProp) {
-                ret = dtoIdProp.tsType.type;
                 params.push(dtoIdProp.field);
                 args = [ `${dtoIdProp.field}: ${dtoIdProp.tsType.type}` ];
             } else {
