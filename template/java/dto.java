@@ -41,7 +41,8 @@ function build(entityDef) {
 
     for (let prop of props) {
         if (prop.field === 'deleted') continue;
-        propLines.push(`private ${prop.javaType} ${prop.field};`);
+        let comment = prop.label;
+        propLines.push(`${comment ? `\/\/${comment}\n    ` : ''}private ${prop.javaType} ${prop.field};`);
     }
 
     for (let imp of imports) {

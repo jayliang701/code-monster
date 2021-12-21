@@ -66,9 +66,9 @@ function build(entityDef) {
     for (let prop of props) {
         if (prop.field === 'id' || prop.field === 'deleted' || prop.field === 'createTime' ||prop.field === 'updateTime') continue;
         let param = prop.field;
-        if (prop.type === 'map') {
+        if (prop.jsType === 'map') {
             param = `${prop.field} == null ? new HashMap<>() : ${prop.field}`;
-        } else if (prop.type === 'list') {
+        } else if (prop.jsType === 'list') {
             param = `${prop.field} == null ? new ArrayList<>() : ${prop.field}`;
         }
         newCreateMethod += `${indent}doc.set${prop.field.charAt(0).toUpperCase() + prop.field.substr(1)}(${param});\n`;

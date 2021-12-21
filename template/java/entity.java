@@ -40,7 +40,7 @@ function build(entityDef) {
 
     for (let prop of props) {
         if (prop.lineIndex < 0) continue;
-        if (prop.type === 'map' || prop.type === 'list') {
+        if (prop.jsType === 'map' || prop.jsType === 'list') {
             let ann = findAnnotation(prop.annotations, '@TableField');
             if (!ann) {
                 ann = `@TableField(typeHandler = JacksonTypeHandler.class)`;
@@ -76,7 +76,7 @@ function build(entityDef) {
     }
 
     let idProp = findIdProp(props);
-    if (idProp && idProp.type === 'long') {
+    if (idProp && idProp.javaType === 'Long') {
         if (code.indexOf('AbstractEntity<') < 0) {
             code = code.replace(classDefLine, `${classDefLine.trim().replace('{', '')}extends AbstractEntity<${entityName}> {`);
             code = code.replace(packageDefLine, `${packageDefLine}\n\nimport com.ugeez.commons.mybatisplus.entity.AbstractEntity;`);

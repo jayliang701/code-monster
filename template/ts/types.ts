@@ -7,13 +7,12 @@ const { findClassDefineLine, findPackageDefineLine, findIdProp, findProp, findAn
 
 function buildType(typeName, props) {
     let code = `export type ${typeName} = {\n`;
-    let exts = '';
 
     let idProp = findIdProp(props);
 
     for (let prop of props) {
         if (prop.field === idProp.field) continue;
-        code += `    ${prop.field}: ${prop.tsType.type};\n`;
+        code += `    ${prop.field}: ${prop.tsType.type};${prop.label === prop.field ? '' : `    //${prop.label}`}\n`;
     }
 
     code += `}${idProp ? ` & IdValue` : ''};`;

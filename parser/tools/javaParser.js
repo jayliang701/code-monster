@@ -363,6 +363,7 @@ const parseJavaField = (javaCodeLines, field) => {
                 scope,
                 field,
                 comment,
+                label: comment ? comment.replace(/[\r\n]/img, ' ') : field,
                 type: part,
                 javaType,
                 jsType,
