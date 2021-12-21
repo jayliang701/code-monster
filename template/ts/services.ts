@@ -53,7 +53,7 @@ async function buildConvertMethod(classDef) {
     };
 }
 
-async function buildAPI(method, entityDef) {
+async function buildAPI(method, apiDef) {
     let args = [];
     let methodName = method.name;
     if (methodName === 'delete') methodName = 'remove';
@@ -125,6 +125,19 @@ async function buildAPI(method, entityDef) {
             url = url[0];
             url = url.substring(url.indexOf('"') + 1, url.lastIndexOf('"'));
             if (!url.startsWith('/')) url = "/" + url;
+
+            let requestMappingAnn = findAnnotation(apiDef.annotations || [], 'RequestMapping');
+            if (requestMappingAnn) {
+                let urlPrefix = requestMappingAnn.match(/(value)?\s?=?\s?"\/?.+"/img);
+                if (urlPrefix) {
+                    urlPrefix = urlPrefix[0];
+                    urlPrefix = urlPrefix.substring(urlPrefix.indexOf('"') + 1, urlPrefix.lastIndexOf('"'));
+                    if (!urlPrefix.startsWith('/')) urlPrefix = "/" + urlPrefix;
+                    if (urlPrefix.endsWith('/')) urlPrefix = urlPrefix.substr(0, urlPrefix.length - 1);
+
+                    url = urlPrefix + url;
+                }
+            }
         }
     }
 
@@ -158,6 +171,16 @@ async function buildAPI(method, entityDef) {
                 }
             }
 
+            if (args.length === 1 && (dtoDef.className.endsWith('CreateReq') || dtoDef.className.endsWith('UpdateReq'))) {
+                let guessDtoName = dtoDef.className.replace(/(Create|Update)Req/img, '');
+                let existingGuestDtoType = relativeTypes[guessDtoName];
+                if (existingGuestDtoType) {
+                    //猜测是CRUD接口
+                    args = [ `data: ${existingGuestDtoType.tsType.type}` ];
+                    retriveDto = retriveDto.replace(` = ${dtoParam.name};`, ` = data;`);
+                }
+            }
+
         }
     }
 
@@ -178,23 +201,23 @@ async function buildAPI(method, entityDef) {
     return code;
 }
 
-async function build(entityDef) {
+async function build(classDef) {
 
-    const { javaCode, imports, javaCodeLines, sql, entityName, props, methods, tableName, rootNamespace, namespace } = entityDef;
+    const { javaCode, imports, javaCodeLines, sql, entityName, props, methods, tableName, rootNamespace, namespace } = classDef;
 
 
     let code = originalCode;
 
     let contents = [];
     for (let method of methods) {
-        contents.push(await buildAPI(method, entityDef));
+        contents.push(await buildAPI(method, classDef));
     }
 
     code = code.replace('//CODES', contents.join('\n\n'));
 
     return {
         code,
-        entityDef,
+        classDef,
     };
 }
 

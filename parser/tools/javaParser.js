@@ -247,14 +247,18 @@ const parseNamespace = (javaCodeLines) => {
     };
 }
 
-const convertJSType = (javaType) => {
+const convertJSType = (javaType, field) => {
     let jsType = javaType;
     if (jsType.indexOf('<') > 0) {
         //List or Map
         jsType = jsType.substring(0, jsType.indexOf('<')).trim();
     }
     jsType = jsType.toLowerCase();
-    return JAVA_TYPE_MAPPING[jsType] || 'object';
+    jsType = JAVA_TYPE_MAPPING[jsType] || 'object';
+    if (field && (field === 'id' || field.endsWith('Id')) && jsType === 'number') {
+        jsType = 'string';
+    }
+    return jsType;
 }
 
 const convertTSType = (jsType, javaType) => {
@@ -396,20 +400,20 @@ const parseJavaField = (javaCodeLines, field) => {
 const parseMethodParam = (str) => {
     let parts = str.trim().split(/\s/);
     let annotations = [];
-    let javaType, jsType, tsType, name;
+    let javaType, jsType, tsType, name = parts[parts.length - 1];
     for (let part of parts) {
         if (part.startsWith('@')) {
             annotations.push(part.substr(1));
         } else {
             if (!javaType) {
                 javaType = part;
-                jsType = convertJSType(javaType);
+                jsType = convertJSType(javaType, name);
                 tsType = convertTSType(jsType, javaType);
             }
         }
     }
     return {
-        name: parts[parts.length - 1],
+        name,
         jsType,
         tsType,
         javaType,
@@ -498,6 +502,12 @@ const describeClass = async (...rest) => {
 
     let javaCodeLines = javaCode.split('\n');
 
+    let classDefineLineIndex = findClassDefineLine(javaCodeLines);
+    let annotations = [];
+    if (classDefineLineIndex > 1) {
+        annotations = parseAnnotation(javaCodeLines, classDefineLineIndex - 1);
+    }
+
     let jsCode = javaToJavascript(javaCode);
     jsCode = jsCode.replace(/\s+(extends|implements)\s+[a-zA-Z0-9_]+/img, '');
     let entity = eval(`(function() { ` + jsCode + ` return new ${className}(); })()`);
@@ -542,6 +552,7 @@ const describeClass = async (...rest) => {
         className,
         props,
         methods,
+        annotations,
         namespace: namespaceDef.namespace,
         rootNamespace: namespaceDef.rootNamespace,
     };

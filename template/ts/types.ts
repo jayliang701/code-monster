@@ -7,18 +7,22 @@ const { findClassDefineLine, findPackageDefineLine, findIdProp, findProp, findAn
 
 function buildType(typeName, props) {
     let code = `export type ${typeName} = {\n`;
+    let exts = '';
+
+    let idProp = findIdProp(props);
 
     for (let prop of props) {
+        if (prop.field === idProp.field) continue;
         code += `    ${prop.field}: ${prop.tsType.type};\n`;
     }
 
-    code += `};`;
+    code += `}${idProp ? ` & IdValue` : ''};`;
     return code;
 }
 
-async function build(entityDef) {
+async function build(classDef) {
 
-    const { javaCode, imports, javaCodeLines, sql, tsType, props, tableName, rootNamespace, namespace } = entityDef;
+    const { javaCode, imports, javaCodeLines, sql, tsType, props, tableName, rootNamespace, namespace } = classDef;
 
 
     let code = originalCode;
@@ -27,7 +31,7 @@ async function build(entityDef) {
 
     return {
         code,
-        entityDef,
+        classDef,
     };
 }
 

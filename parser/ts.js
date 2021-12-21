@@ -5,7 +5,7 @@ const fs = require('fs/promises');
 
 const javaParser = require('./tools/javaParser');
 
-const buildCode = (code, entityDef, context) => {
+const buildCode = (code, classDef, context) => {
     return new Promise((resolve, reject) => {
         if (code.indexOf('</JS>') < 0) {
             resolve(code);
@@ -14,7 +14,7 @@ const buildCode = (code, entityDef, context) => {
     
         let originalCode = code.substr(0, code.indexOf('<JS>'));
     
-        if (!entityDef) {
+        if (!classDef) {
             resolve(originalCode);
             return;
         }
@@ -48,11 +48,11 @@ const buildCode = (code, entityDef, context) => {
         // let wrapper = `(function(){ ${jsCode};  return build(${JSON.stringify(entityDef)});})();`;
         let vmExports = vm.run(`module.exports.build = (function(){ ${jsCode};  return build;})();`, path.resolve(__dirname, '../'));
 
-        vmExports.build(entityDef).then(res => {
+        vmExports.build(classDef).then(res => {
             code = res.code;
 
-            for (let key in res.entityDef) {
-                entityDef[key] = res.entityDef[key];
+            for (let key in res.classDef) {
+                classDef[key] = res.classDef[key];
             }
         
             resolve(code);
