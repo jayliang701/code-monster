@@ -158,3 +158,56 @@ exports.camelCaseToUnderline = (name) => {
     }
     return newName;
 }
+
+const { NodeVM } = require("vm2");
+
+const defaultExecOptions = {
+    customSandbox: {}, 
+    entry: 'run',
+    resolveRequirePrefix: undefined,
+};
+
+exports.exec = async (code, args = [], options = defaultExecOptions) => {
+    return new Promise((resolve, reject) => {
+
+        options = {
+            ...defaultExecOptions,
+            ...options,
+        }
+
+        const sandbox = {
+            rootPath: path.resolve(__dirname, '../'),
+            config: global.config,
+            ...options.customSandbox,
+        };
+    
+        const vm = new NodeVM({
+            require: {
+                root: path.resolve(__dirname, '../'),
+                builtin: ['*'],
+                resolve: (modulePath) => {
+                    if (options.resolveRequirePrefix) {
+                        modulePath = options.resolveRequirePrefix(modulePath);
+                    }
+                    if (!modulePath.startsWith('.')) {
+                        return path.resolve(__dirname, '../node_modules', modulePath);
+                    }
+                    return path.resolve(__dirname, '../', modulePath);
+                },
+                external: true,
+
+            },
+            sandbox,
+        });
+
+        const vmExports = vm.run(`module.exports.${options.entry} = (function(){ ${code};  return ${options.entry};})();`, path.resolve(__dirname, '../'));
+
+        vmExports[options.entry].apply(null, args).then(res => {
+            resolve(res);
+        }).catch(err => {
+            reject(err);
+        });
+    
+    });
+}
+

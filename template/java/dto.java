@@ -37,6 +37,10 @@ function build(entityDef) {
     let packageDefLineIndex = findPackageDefineLine(javaCodeLines);
     let packageDefLine = javaCodeLines[packageDefLineIndex];
 
+    if (entityDef.label !== entityName) {
+        code = code.replace(`@Data`, `\/\/${entityDef.label}\n@Data`);
+    }
+
     let propLines = [];
 
     for (let prop of props) {
