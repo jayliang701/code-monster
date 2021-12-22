@@ -71,17 +71,15 @@ const buildTypeCode = async (classDef, parentContext) => {
     let tsCode = await utils.readTemplateFileFromRemote('ts', 'types.ts');
     tsCode = await buildCode(tsCode, classDef, context);
 
-    if (parentContext.relativeTypes) {
-        let merged = {
-            ...parentContext.relativeTypes,
-            ...context.relativeTypes,
-        };
-        for (let key in context.relativeTypes) {
-            if (parentContext.relativeTypes[key]) continue;
+    let merged = {
+        ...(parentContext && parentContext.relativeTypes ? parentContext.relativeTypes : {}),
+        ...context.relativeTypes,
+    };
+    for (let key in context.relativeTypes) {
+        if (parentContext && parentContext.relativeTypes && parentContext.relativeTypes[key]) continue;
 
-            let subTsCode = await buildTypeCode(context.relativeTypes[key], { relativeTypes: merged });
-            tsCode = subTsCode + '\n' + tsCode;
-        }
+        let subTsCode = await buildTypeCode(context.relativeTypes[key], { relativeTypes: merged });
+        tsCode = subTsCode + '\n' + tsCode;
     }
 
     return tsCode;

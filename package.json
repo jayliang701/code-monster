@@ -27,6 +27,7 @@
     "axios": "^0.24.0",
     "capitalization": "^1.0.0",
     "java-to-javascript": "^0.1.15",
+    "mkdirp": "^1.0.4",
     "vm2": "^3.9.5"
   }
 }

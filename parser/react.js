@@ -106,4 +106,14 @@ exports.commands = {
         return outputs;
     },
 
+    cms_crud_page: async (params, args) => {
+        const outputs = [];
+        
+        outputs.push.apply(outputs, await exports.commands.cms_create_page(params, args));
+        outputs.push.apply(outputs, await exports.commands.cms_detail_page(params, args));
+        outputs.push.apply(outputs, await exports.commands.cms_list_page(params, args));
+
+        return outputs;
+    },
+
 };

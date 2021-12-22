@@ -18,7 +18,7 @@ const run = async (params, args) => {
 
     const dataName = name;
     const dataVarName = dataName.charAt(0).toLowerCase() + dataName.substr(1);
-    let dataUrl = params.dataUrl || dataVarName;
+    let dataUrl = params.dataUrl || utils.camelCaseToUnderline(dataName);
 
     let templateCode = await utils.readTemplateFileFromRemote('react', 'cms_detail_page.tsx');
 
@@ -87,11 +87,14 @@ const run = async (params, args) => {
         templateCode = templateCode.replace('//APPEND_CODES', '');
     }
 
+    let outputFolder = path.resolve(config.frontend.root, 'pages');
+    await require('mkdirp')(outputFolder);
+
     return [
         {
-            name: 'test_page.tsx', 
+            name: dataName +'Detail.tsx', 
             content: templateCode, 
-            output: path.resolve(rootPath, './template/react/'),
+            output: outputFolder,
         }
     ];
 }
