@@ -63,12 +63,25 @@ const buildCode = (code, classDef, context) => {
     });
 }
 
-const buildTypeCode = async (classDef) => {
+const buildTypeCode = async (classDef, parentContext) => {
     let context = {
-        relativeTypes: []
+        relativeTypes: {}
     };
+
     let tsCode = await utils.readTemplateFileFromRemote('ts', 'types.ts');
     tsCode = await buildCode(tsCode, classDef, context);
+
+    let merged = {
+        ...(parentContext && parentContext.relativeTypes ? parentContext.relativeTypes : {}),
+        ...context.relativeTypes,
+    };
+    for (let key in context.relativeTypes) {
+        if (parentContext && parentContext.relativeTypes && parentContext.relativeTypes[key]) continue;
+
+        let subTsCode = await buildTypeCode(context.relativeTypes[key], { relativeTypes: merged });
+        tsCode = subTsCode + '\n' + tsCode;
+    }
+
     return tsCode;
 }
 
@@ -130,9 +143,10 @@ exports.commands = {
 
         let extCodes = [];
 
-        for (let key in context.relativeTypes) {
+        let keys = Object.keys(context.relativeTypes);
+        for (let key of keys) {
             let relativeTypeDef = context.relativeTypes[key];
-            let classCode = await buildTypeCode(relativeTypeDef);
+            let classCode = await buildTypeCode(relativeTypeDef, context);
             extCodes.push(classCode);
         }
 

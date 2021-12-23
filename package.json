@@ -1,6 +1,6 @@
 {
   "name": "codemonster",
-  "version": "1.2.1",
+  "version": "1.2.4",
   "description": "A utility tool to generate code template for lazy engineers.",
   "main": "index.js",
   "directories": {
@@ -27,6 +27,7 @@
     "axios": "^0.24.0",
     "capitalization": "^1.0.0",
     "java-to-javascript": "^0.1.15",
+    "mkdirp": "^1.0.4",
     "vm2": "^3.9.5"
   }
 }

@@ -75,4 +75,45 @@ exports.commands = {
     fcompts:  async (params, args) => {
         return genComp(params, args, 'fcomp.tsx');
     },
+
+    cms_create_page: async (params, args) => {
+        const code = await utils.readTemplateFileFromRemote('react', 'cms_create_page.build.js');
+        const outputs = await utils.exec(code, [ params, args ], {
+            resolveRequirePrefix: (modulePath) => {
+                return modulePath.replace('../../', './');
+            }
+        });
+        return outputs;
+    },
+
+    cms_detail_page: async (params, args) => {
+        const code = await utils.readTemplateFileFromRemote('react', 'cms_detail_page.build.js');
+        const outputs = await utils.exec(code, [ params, args ], {
+            resolveRequirePrefix: (modulePath) => {
+                return modulePath.replace('../../', './');
+            }
+        });
+        return outputs;
+    },
+
+    cms_list_page: async (params, args) => {
+        const code = await utils.readTemplateFileFromRemote('react', 'cms_list_page.build.js');
+        const outputs = await utils.exec(code, [ params, args ], {
+            resolveRequirePrefix: (modulePath) => {
+                return modulePath.replace('../../', './');
+            }
+        });
+        return outputs;
+    },
+
+    cms_crud_page: async (params, args) => {
+        const outputs = [];
+        
+        outputs.push.apply(outputs, await exports.commands.cms_create_page(params, args));
+        outputs.push.apply(outputs, await exports.commands.cms_detail_page(params, args));
+        outputs.push.apply(outputs, await exports.commands.cms_list_page(params, args));
+
+        return outputs;
+    },
+
 };

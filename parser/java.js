@@ -83,7 +83,9 @@ const buildCode = (code, entityDef) => {
 
 exports.commands = {
 
-    "class": async (params, args, outputFolder) => {
+    "class": async (params, args) => {
+        let outputFolder = global.config.backend.root;
+
         let name = args[0] ? args[0] : '';
         if (!name || name.startsWith('-')) {
             name = params.name || 'Test';
@@ -100,7 +102,9 @@ exports.commands = {
         ];
     },
     
-    "entity": async (params, args, outputFolder) => {
+    "entity": async (params, args) => {
+        let outputFolder = global.config.backend.root;
+
         let name = args[0] ? args[0] : '';
         if (!name || name.startsWith('-')) {
             name = params.name || 'Test';
@@ -136,7 +140,9 @@ exports.commands = {
         return outputs;
     },
     
-    "dto": async (params, args, outputFolder) => {
+    "dto": async (params, args) => {
+        let outputFolder = global.config.backend.root;
+
         let name = args[0] ? args[0] : '';
         if (!name || name.startsWith('-')) {
             name = params.name || 'Test';
@@ -156,7 +162,9 @@ exports.commands = {
         ];
     },
     
-    "mapper": async (params, args, outputFolder) => {
+    "mapper": async (params, args) => {
+        let outputFolder = global.config.backend.root;
+
         let name = args[0] ? args[0] : '';
         if (!name || name.startsWith('-')) {
             name = params.name || 'Test';
@@ -201,7 +209,9 @@ exports.commands = {
         return outputs;
     },
     
-    "service": async (params, args, outputFolder) => {
+    "service": async (params, args) => {
+        let outputFolder = global.config.backend.root;
+
         let name = args[0] ? args[0] : '';
         if (!name || name.startsWith('-')) {
             name = params.name || 'Test';
@@ -242,7 +252,9 @@ exports.commands = {
         ];
     },
     
-    "controller": async (params, args, outputFolder) => {
+    "controller": async (params, args) => {
+        let outputFolder = global.config.backend.root;
+        
         let name = args[0] ? args[0] : '';
         if (!name || name.startsWith('-')) {
             name = params.name || 'Test';
@@ -327,7 +339,9 @@ exports.commands = {
         ];
     },
     
-    "repo": async (params, args, outputFolder) => {
+    "repo": async (params, args) => {
+        let outputFolder = global.config.backend.root;
+
         let name = args[0] ? args[0] : '';
         if (!name || name.startsWith('-')) {
             name = params.name || 'Test';
@@ -393,7 +407,9 @@ exports.commands = {
         return outputs;
     },
     
-    "crud": async (params, args, outputFolder) => {
+    "crud": async (params, args) => {
+        let outputFolder = global.config.backend.root;
+
         let name = params.name ? params.name : (args[0] ? args[0] : '');
         if (!name || name.startsWith('-')) {
             name = 'Test';
@@ -445,7 +461,8 @@ exports.commands = {
         return outputs;
     },
     
-    "data2crud": async (params, args, outputFolder) => {
+    "data2crud": async (params, args) => {
+        let outputFolder = global.config.backend.root;
         let filePath = args[0] ? args[0] : '';
         
         if (!filePath) {

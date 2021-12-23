@@ -89,6 +89,7 @@ exports.run = () => {
 }
 
 exports.runAsModule = (vars, args) => {
+    startup();
     return exec(vars, args);
 }
 
