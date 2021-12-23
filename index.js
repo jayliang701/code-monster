@@ -52,7 +52,6 @@ const startup = () => {
 }
 
 const exec = (vars, args) => {
-    startup();
     let group = args[0];
     let template = args[1];
 
@@ -79,6 +78,7 @@ const exec = (vars, args) => {
 }
 
 exports.run = () => {
+    startup();
     exec(global.VARS, global.ARGS).then(() => {
         process.exit();
     }).catch(err => {
@@ -89,6 +89,7 @@ exports.run = () => {
 }
 
 exports.runAsModule = (vars, args) => {
+    startup();
     return exec(vars, args);
 }
 
