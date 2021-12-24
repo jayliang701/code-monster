@@ -34,13 +34,6 @@ class DATA_NAMEDetailStore extends PageStore<IAdminStore> {
         const { formApi, detail } = this;
         if (formApi && detail) {
             formApi.setValues({
-                // id: detail.id,
-                // name: detail.name,
-                // address: detail.address,
-                // city: detail.city,
-                // province: detail.province,
-                // registryTime: detail.registryTime ? new Date(detail.registryTime) : undefined,
-                // employeeNum: detail.employeeNum,
                 FORM_VALUES_SET
             });
         }
@@ -87,25 +80,14 @@ const DATA_NAMEDetail: React.FC = (): JSX.Element => {
                         Message.success('DATA_LABEL更新成功');
                     }}
                 >
-                    {/* <Row gutter={24}>
-                        <Col span={24}>
-                            <Form.Input
-                                field="id"
-                                label="id"
-                                readonly
-                            />
-                        </Col>
-                    </Row> */}
-
                     FORM_ITEMS
-
                     <Row className="mt-8">
                         <Col span={24}>
                             <Space spacing="loose" >
                                 <Button
                                     size="large"
                                     onClick={() => {
-                                        history.goBack();
+                                        history.replace('/DATA_URL')
                                     }}
                                 >
                                     返回上一级

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useHistory } from 'react-router-dom';
 
 import { observer } from 'mobx-react';
-import { Button, Col, Form, Row } from '@douyinfe/semi-ui';
+import { Button, Col, Form, Row, Space } from '@douyinfe/semi-ui';
 import { PageStore } from '@shared/store/PageStore';
 import { DATA_NAME, IAdminStore } from '@shared/types';
 import * as DATA_NAME_VARService from '../../../services/DATA_NAME_VAR';
@@ -49,14 +49,24 @@ const DATA_NAMECreate: React.FC = (): JSX.Element => {
 
                     <Row className="mt-8">
                         <Col span={24}>
-                            <Button
-                                theme='solid' type="primary"
-                                size="large"
-                                loading={loading}
-                                htmlType="submit"
-                            >
-                                创建DATA_LABEL
-                            </Button>
+                            <Space spacing="loose" >
+                                <Button
+                                    size="large"
+                                    onClick={() => {
+                                        history.goBack();
+                                    }}
+                                >
+                                    返回上一级
+                                </Button>
+                                <Button
+                                    theme='solid' type="primary"
+                                    size="large"
+                                    loading={loading}
+                                    htmlType="submit"
+                                >
+                                    确认创建
+                                </Button>
+                            </Space>
                         </Col>
                     </Row>
                 </Form>
