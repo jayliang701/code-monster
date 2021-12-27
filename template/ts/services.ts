@@ -27,6 +27,7 @@ function buildIndent(len) {
 }
 
 async function buildPropSetters(classDef, instanceName = 'res', indent = 4) {
+    let extraCode = [];
     let propSetters = [];
     for (let prop of classDef.props) {
         let propMapping = `${instanceName}.${prop.field}`;
@@ -36,17 +37,33 @@ async function buildPropSetters(classDef, instanceName = 'res', indent = 4) {
             propMapping += ' || []';
 
             propMapping = `(${propMapping}).map(item => ${await buildPropSetters()})`
+        } else if (prop.jsType === 'object') {
+            let retClassDef = await findClassDef(prop.tsType.type);
+            if (retClassDef && !retClassDef.isEnum) {
+                let convt = await buildConvertMethod(retClassDef);
+                extraCode.push(convt.code);
+                propMapping = `${convt.name}(${propMapping})`;
+            }
         }
         propSetters.push(`${prop.field}: ${propMapping},`);
     }
     let indentSpace = buildIndent(indent);
-    return `{\n    ${indentSpace}${propSetters.join(`\n    ${indentSpace}`)}\n    ${buildIndent(indent - 4)}}`;
+    return {
+        code: `{\n    ${indentSpace}${propSetters.join(`\n    ${indentSpace}`)}\n    ${buildIndent(indent - 4)}}`,
+        extraCode: extraCode.join('\n\n'),
+    };
 }
 
 async function buildConvertMethod(classDef) {
     let returnType = classDef.tsType.type;
+    let propSettersRet = await buildPropSetters(classDef, 'obj');
     let methodName = `convert${returnType}`;
-    let code = `export const ${methodName} = (obj: SourceData): ${returnType} => {\n    const item: ${returnType} = ${await buildPropSetters(classDef, 'obj')};\n    return item;\n};`;
+    let code = `export const ${methodName} = (obj: SourceData): ${returnType} => {\n    const item: ${returnType} = ${propSettersRet.code};\n    return item;\n};`;
+    
+    if (propSettersRet.extraCode) {
+        code = propSettersRet.extraCode + '\n\n' + code;
+    }
+
     return {
         code,
         name: methodName,

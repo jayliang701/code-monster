@@ -11,8 +11,8 @@ async function buildType({ tsType, props, label, className }) {
     let idProp = findIdProp(props);
 
     for (let prop of props) {
-        if (prop.field === idProp.field) continue;
-        code += `    ${prop.field}${idProp && (prop.field === 'createTime' || prop.field === 'updateTime' ? '?' : '')}: ${prop.tsType.type};${prop.label === prop.field ? '' : `    //${prop.label}`}\n`;
+        if (idProp && prop.field === idProp.field) continue;
+        code += `    ${prop.field}${idProp && (prop.field === 'createTime' || prop.field === 'updateTime') ? '?' : ''}: ${prop.tsType.type};${prop.label === prop.field ? '' : `    //${prop.label}`}\n`;
         if (prop.jsType === 'object') {
             if (!context.relativeTypes[prop.tsType.type]) {
                 let propClassDef = await findClassDef(prop.tsType.type);

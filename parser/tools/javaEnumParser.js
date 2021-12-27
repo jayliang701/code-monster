@@ -80,7 +80,10 @@ const describeEnum = async (...rest) => {
 
         line = line.trim();
         if (line.endsWith(',') || line.endsWith(';') || line.endsWith(')') || /[a-zA-Z0-9_]/.test(line.charAt(line.length - 1)) ||
-            (line.indexOf(',') > 0 && line.indexOf('//') > 0)) {
+            (line.indexOf(',') > 0 && line.indexOf('//') > 0) || 
+            line.replace(/[a-zA-Z0-9_]+/img, '') === ''  || 
+            line.replace(/[a-zA-Z0-9_]+/img, '').trim().startsWith('//')  || 
+            line.replace(/[a-zA-Z0-9_]+/img, '').trim().startsWith('/*')) {
             let comment = '';
             if (line.indexOf('//') > 0) {
                 let parts = line.split('//', 2);

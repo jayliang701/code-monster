@@ -5,7 +5,7 @@ import { observer } from 'mobx-react';
 import { Button, Col, Form, Row, Space } from '@douyinfe/semi-ui';
 import { PageStore } from '@shared/store/PageStore';
 import { DATA_NAME, IAdminStore } from '@shared/types';
-import * as DATA_NAME_VARService from '../../../services/DATA_NAME_VAR';
+import * as DATA_NAME_VARService from '../../services/DATA_NAME_VAR';
 import Message from '@shared/components/Message';
 //APPEND_CODES
 type DATA_NAMECreateFormValues = {
@@ -43,12 +43,15 @@ const DATA_NAMECreate: React.FC = (): JSX.Element => {
                         Message.success('DATA_LABEL创建成功');
                         history.replace('/DATA_URL');
                     }}
+                    labelPosition="left"
+                    labelAlign="right"
+                    labelWidth={160}
                 >
                     
                     FORM_ITEMS
 
                     <Row className="mt-8">
-                        <Col span={24}>
+                        <Col span={24} className="text-center">
                             <Space spacing="loose" >
                                 <Button
                                     size="large"

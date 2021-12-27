@@ -83,9 +83,7 @@ const buildCode = (code, entityDef) => {
 
 exports.commands = {
 
-    "class": async (params, args) => {
-        let outputFolder = global.config.backend.root;
-
+    "class": async (params, args, outputFolder) => {
         let name = args[0] ? args[0] : '';
         if (!name || name.startsWith('-')) {
             name = params.name || 'Test';
@@ -102,9 +100,7 @@ exports.commands = {
         ];
     },
     
-    "entity": async (params, args) => {
-        let outputFolder = global.config.backend.root;
-
+    "entity": async (params, args, outputFolder) => {
         let name = args[0] ? args[0] : '';
         if (!name || name.startsWith('-')) {
             name = params.name || 'Test';
@@ -140,9 +136,7 @@ exports.commands = {
         return outputs;
     },
     
-    "dto": async (params, args) => {
-        let outputFolder = global.config.backend.root;
-
+    "dto": async (params, args, outputFolder) => {
         let name = args[0] ? args[0] : '';
         if (!name || name.startsWith('-')) {
             name = params.name || 'Test';
@@ -157,14 +151,13 @@ exports.commands = {
         code = code.replace(/NAMESPACE/mg, namespace);
 
         code = code.replace(/FILE_NAME/mg, className);
+
         return [
             { name: className + 'Dto.java', content: code, output: outputFolder }
         ];
     },
     
-    "mapper": async (params, args) => {
-        let outputFolder = global.config.backend.root;
-
+    "mapper": async (params, args, outputFolder) => {
         let name = args[0] ? args[0] : '';
         if (!name || name.startsWith('-')) {
             name = params.name || 'Test';
@@ -209,9 +202,7 @@ exports.commands = {
         return outputs;
     },
     
-    "service": async (params, args) => {
-        let outputFolder = global.config.backend.root;
-
+    "service": async (params, args, outputFolder) => {
         let name = args[0] ? args[0] : '';
         if (!name || name.startsWith('-')) {
             name = params.name || 'Test';
@@ -252,9 +243,7 @@ exports.commands = {
         ];
     },
     
-    "controller": async (params, args) => {
-        let outputFolder = global.config.backend.root;
-        
+    "controller": async (params, args, outputFolder) => {        
         let name = args[0] ? args[0] : '';
         if (!name || name.startsWith('-')) {
             name = params.name || 'Test';

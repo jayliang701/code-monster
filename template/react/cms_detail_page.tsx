@@ -6,7 +6,7 @@ import { observer } from 'mobx-react';
 import { Button, Col, Form, Row, Space } from '@douyinfe/semi-ui';
 import { PageStore } from '@shared/store/PageStore';
 import { DATA_NAME, IAdminStore } from '@shared/types';
-import * as DATA_NAME_VARService from '../../../services/DATA_NAME_VAR';
+import * as DATA_NAME_VARService from '../../services/DATA_NAME_VAR';
 import Message from '@shared/components/Message';
 import { useQuery } from '@shared/hooks';
 import { FormApi } from '@douyinfe/semi-ui/lib/es/form';
@@ -79,10 +79,13 @@ const DATA_NAMEDetail: React.FC = (): JSX.Element => {
                         await viewStore.submit(values);
                         Message.success('DATA_LABEL更新成功');
                     }}
+                    labelPosition="left"
+                    labelAlign="right"
+                    labelWidth={160}
                 >
                     FORM_ITEMS
                     <Row className="mt-8">
-                        <Col span={24}>
+                        <Col span={24} className="text-center">
                             <Space spacing="loose" >
                                 <Button
                                     size="large"

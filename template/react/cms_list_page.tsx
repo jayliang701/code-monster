@@ -8,7 +8,7 @@ import SearchTablePage, { SearchFormControlAction, SearchFormControlType, Search
 import { action } from 'mobx';
 import { SearchResult } from '@ugeez/frontend-commons/lib/types';
 import { Space, Popconfirm, Typography } from '@douyinfe/semi-ui';
-import * as DATA_NAME_VARService from '../../../services/DATA_NAME_VAR';
+import * as DATA_NAME_VARService from '../../services/DATA_NAME_VAR';
 import Message from '@shared/components/Message';
 
 type DATA_NAMESearchFilter = {} & SearchFilter;
@@ -42,7 +42,7 @@ const DATA_NAMEList = (): JSX.Element => {
                 return (
                     <Space spacing="tight">
                         <Typography.Text link={{ onClick: () => {
-                            history.push(`/DATA_NAME_VAR/detail?id=${item.id}`);
+                            history.push(`/DATA_URL/detail?id=${item.id}`);
                         }}}>查看</Typography.Text>
                         <Popconfirm
                             title="确定是否要删除该数据？"
@@ -78,7 +78,7 @@ const DATA_NAMEList = (): JSX.Element => {
                             view: SearchFormControlType.Button,
                             text: '新增DATA_LABEL',
                             onClick: () => {
-                                history.push('/DATA_NAME_VAR/create');
+                                history.push('/DATA_URL/create');
                             }
                         },
                         {

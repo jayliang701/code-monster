@@ -173,7 +173,7 @@ const parseComment = (javaCodeLines, startIndex) => {
                     }   
                     
                     if (commentMode === 1) {
-                        return comment;
+                        return comment.trim();
                     }
     
                     prevLine2 = javaCodeLines[backIndex2].trim();
@@ -186,17 +186,17 @@ const parseComment = (javaCodeLines, startIndex) => {
                     }
 
                     if (backIndex2 < 1) {
-                        return comment;
+                        return comment.trim();
                     }
                 }
             }
         }
         backIndex1 --;
         if (backIndex1 < 0) {
-            return comment;
+            return comment.trim();
         }
     }
-    return comment;
+    return comment.trim();
 }
 
 const parseAnnotation = (javaCodeLines, startIndex) => {
