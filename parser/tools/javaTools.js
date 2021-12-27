@@ -48,7 +48,7 @@ const SQL_TYPE_MAPPING = {
 };
 
 const isPropLine = (line) => {
-    return line.startsWith('public ') || line.startsWith('private ') || line.startsWith('protected ');
+    return line.startsWith('public ') || line.startsWith('private ') || line.startsWith('protected ') || line.trim().endsWith(';');
 }
 
 const isImportLine = (line) => {
