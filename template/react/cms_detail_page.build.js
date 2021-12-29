@@ -88,7 +88,7 @@ const run = async (params, args) => {
     }
 
     let outputFolder = path.resolve(config.frontend.root, 'pages');
-    await require('mkdirp')(outputFolder);
+    await require('./node_modules/mkdirp')(outputFolder);
 
     return [
         {
