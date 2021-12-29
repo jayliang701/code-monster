@@ -87,7 +87,7 @@ const describeEnum = async (...rest) => {
             let comment = '';
             if (line.indexOf('//') > 0) {
                 let parts = line.split('//', 2);
-                comment = parts[1];
+                comment = parts[1].trim();
                 line = parts[0].trim();
             }
             enumLines.push(line);
