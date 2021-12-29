@@ -35,10 +35,22 @@ async function buildPropSetters(classDef, instanceName = 'res', indent = 4) {
             propMapping += ' || {}';
         } else if (prop.jsType === 'array') {
             propMapping += ' || []';
+            if (prop.tsType.valueJsType === 'object') {
+                let retClassDef = await findClassDef(prop.tsType.valueTsType.type);
+                if (retClassDef) context.relativeTypes[prop.tsType.valueTsType.type] = retClassDef;
 
-            propMapping = `(${propMapping}).map(item => ${await buildPropSetters()})`
+                if (retClassDef && !retClassDef.isEnum) {
+                    let convt = await buildConvertMethod(retClassDef);
+                    extraCode.push(convt.code);
+                    propMapping = `(${propMapping}).map(item => { return ${convt.name}(item); })`;
+                }
+            } else {
+                propMapping = `(${propMapping}).map(item => { return item; })`;
+            }
         } else if (prop.jsType === 'object') {
             let retClassDef = await findClassDef(prop.tsType.type);
+            if (retClassDef) context.relativeTypes[prop.tsType.type] = retClassDef;
+
             if (retClassDef && !retClassDef.isEnum) {
                 let convt = await buildConvertMethod(retClassDef);
                 extraCode.push(convt.code);

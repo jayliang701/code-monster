@@ -266,8 +266,12 @@ const convertJSType = (javaType, field) => {
     }
     jsType = jsType.toLowerCase();
     jsType = JAVA_TYPE_MAPPING[jsType] || 'object';
-    if (field && (field === 'id' || field.endsWith('Id')) && jsType === 'number') {
-        jsType = 'string';
+    if (field) {
+        if ((field === 'id' || field.endsWith('Id')) && jsType === 'number') {
+            jsType = 'string';
+        } else if ((field.endsWith('ShiJian') || field.endsWith('RiQi')) && jsType === 'number') {
+            jsType = 'datetime';
+        }
     }
     return jsType;
 }
@@ -294,7 +298,7 @@ const convertTSType = (jsType, javaType) => {
             tsType.type = 'SourceData';
         }
     } else if (jsType === 'array') {
-
+        // console.log(javaType)
     }
 
     if (javaType.indexOf('>') > 0) {
